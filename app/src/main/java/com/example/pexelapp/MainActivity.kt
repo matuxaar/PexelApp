@@ -6,15 +6,25 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.pexelapp.di.ViewModelFactoryState
+import com.example.pexelapp.di.daggerViewModel
+import com.example.pexelapp.di.viewmodels.ViewModelFactory
+import com.example.pexelapp.ui.homescreen.HomeScreen
+import com.example.pexelapp.ui.homescreen.HomeViewModel
 import com.example.pexelapp.ui.theme.PexelAppTheme
+import dagger.internal.DaggerGenerated
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var factory: ViewModelFactory
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (applicationContext as DaggerApp).appComponent.inject(this)
+        val viewModelFactoryState = ViewModelFactoryState(factory)
         setContent {
             PexelAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -22,25 +32,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    PexelApp(viewModelFactoryState)
                 }
             }
         }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PexelAppTheme {
-        Greeting("Android")
+    @Composable
+    fun PexelApp(viewModelFactoryState: ViewModelFactoryState) {
+        val homeViewModel = daggerViewModel<HomeViewModel>(factory = viewModelFactoryState.viewModelFactory)
+        MaterialTheme {
+            HomeScreen(viewModel = homeViewModel)
+        }
     }
+
 }
+
