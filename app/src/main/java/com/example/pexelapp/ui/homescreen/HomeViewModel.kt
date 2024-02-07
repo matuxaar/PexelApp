@@ -7,15 +7,21 @@ import androidx.paging.cachedIn
 import com.example.pexelapp.domain.Photo
 import com.example.pexelapp.domain.Repository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
     private val repository: Repository
 ): ViewModel() {
 
-    fun getCuratedPhotos(): Flow<PagingData<Photo>> {
-        return repository.getCuratedPhotos().cachedIn(viewModelScope)
-    }
+    fun getCuratedPhotos(): Flow<PagingData<Photo>> =
+        repository.getCuratedPhotos().cachedIn(viewModelScope)
+
+
+    fun getSearchPhotos(query: String): Flow<PagingData<Photo>> =
+        repository.getSearchPhotos(query).cachedIn(viewModelScope)
 
 
 }

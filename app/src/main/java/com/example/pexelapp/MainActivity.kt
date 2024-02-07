@@ -8,11 +8,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.pexelapp.di.ViewModelFactoryState
 import com.example.pexelapp.di.daggerViewModel
 import com.example.pexelapp.di.viewmodels.ViewModelFactory
+import com.example.pexelapp.ui.detailsscreen.DetailsScreen
+import com.example.pexelapp.ui.detailsscreen.DetailsViewModel
 import com.example.pexelapp.ui.homescreen.HomeScreen
 import com.example.pexelapp.ui.homescreen.HomeViewModel
+import com.example.pexelapp.ui.main.MainScreen
+import com.example.pexelapp.ui.navigation.AppNavGraph
+import com.example.pexelapp.ui.navigation.Screen
+import com.example.pexelapp.ui.navigation.rememberNavigationState
 import com.example.pexelapp.ui.theme.PexelAppTheme
 import dagger.internal.DaggerGenerated
 import javax.inject.Inject
@@ -32,16 +40,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PexelApp(viewModelFactoryState)
+                    PexelAppTheme {
+                        MainScreen(viewModelFactoryState = viewModelFactoryState)
+                    }
                 }
             }
-        }
-    }
-    @Composable
-    fun PexelApp(viewModelFactoryState: ViewModelFactoryState) {
-        val homeViewModel = daggerViewModel<HomeViewModel>(factory = viewModelFactoryState.viewModelFactory)
-        MaterialTheme {
-            HomeScreen(viewModel = homeViewModel)
         }
     }
 
