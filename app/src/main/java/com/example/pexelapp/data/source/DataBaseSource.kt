@@ -23,4 +23,6 @@ class DataBaseSource @Inject constructor(
     suspend fun saveLikeState(photoEntity: PhotoEntity) =
         photoDao.saveLikeState(photoEntity)
 
+    suspend fun getAllPhotosFromDb(): List<PhotoEntity> = photoDao.getAllPhotosFromDb()
+
 }

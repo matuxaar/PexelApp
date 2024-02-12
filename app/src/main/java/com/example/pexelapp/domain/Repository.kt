@@ -31,4 +31,6 @@ interface Repository {
     suspend fun getLikeState(photoId: Int): Boolean
 
     suspend fun saveLikeState(photo: Photo)
+
+    suspend fun getPhotosFromDb(): List<Photo>
 }

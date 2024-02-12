@@ -76,12 +76,12 @@ class DetailsViewModel @Inject constructor(
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
             if (isFromBookmarks) {
-                if (repository.getLikeState(photoId)) {
+                //if (repository.getLikeState(photoId)) {
                     repository.getPhotoFromDb(photoId)
                         .collect{ photo ->
                             _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
                         }
-                }
+              //  }
             } else {
                 repository.getPhoto(photoId)
                     .collect { photo ->
@@ -104,6 +104,9 @@ class DetailsViewModel @Inject constructor(
                 repository.removeFromBookmarks(photo.id)
             } else {
                 repository.addToBookmarks(photo)
+                _detailsStateFlow.update { currentState ->
+                    currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
+                }
             }
             repository.saveLikeState(photo)
             _detailsStateFlow.update { currentState ->

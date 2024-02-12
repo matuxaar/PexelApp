@@ -33,6 +33,9 @@ class BookmarksViewModel @Inject constructor(
         viewModelScope.launch {
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
             _photoListStateFlow.value = repository.getAllImagesFromDb()
+//            if (repository.getPhotosFromDb().isEmpty()) {
+//                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isError = true)
+//            }
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
         }
     }

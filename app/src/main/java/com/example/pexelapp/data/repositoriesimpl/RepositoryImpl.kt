@@ -147,6 +147,10 @@ class RepositoryImpl @Inject constructor(
         dataBaseSource.saveLikeState(photoToEntityMapper(photo))
     }
 
+    override suspend fun getPhotosFromDb(): List<Photo> = withContext(Dispatchers.IO) {
+        dataBaseSource.getAllPhotosFromDb().map { photoEntityMapper(it) }
+    }
+
 
     companion object {
         private const val PAGE_SIZE = 30
