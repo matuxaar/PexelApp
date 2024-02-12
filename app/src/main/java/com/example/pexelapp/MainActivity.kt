@@ -6,15 +6,36 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.pexelapp.di.ViewModelFactoryState
+import com.example.pexelapp.di.daggerViewModel
+import com.example.pexelapp.di.viewmodels.ViewModelFactory
+import com.example.pexelapp.ui.detailsscreen.DetailsScreen
+import com.example.pexelapp.ui.detailsscreen.DetailsViewModel
+import com.example.pexelapp.ui.homescreen.HomeScreen
+import com.example.pexelapp.ui.homescreen.HomeViewModel
+import com.example.pexelapp.ui.main.MainScreen
+import com.example.pexelapp.ui.navigation.AppNavGraph
+import com.example.pexelapp.ui.navigation.Screen
+import com.example.pexelapp.ui.navigation.rememberNavigationState
 import com.example.pexelapp.ui.theme.PexelAppTheme
+import com.example.pexelapp.ui.theme.White
+import dagger.internal.DaggerGenerated
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var factory: ViewModelFactory
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (applicationContext as DaggerApp).appComponent.inject(this)
+        val viewModelFactoryState = ViewModelFactoryState(factory)
+        installSplashScreen()
         setContent {
             PexelAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -22,25 +43,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    PexelAppTheme {
+                        MainScreen(viewModelFactoryState = viewModelFactoryState)
+                    }
                 }
             }
         }
     }
+
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PexelAppTheme {
-        Greeting("Android")
-    }
-}
