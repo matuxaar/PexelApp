@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.pexelapp.data.mappers.PhotoEntityMapper
 import com.example.pexelapp.data.source.DataBaseSource
-import com.example.pexelapp.domain.Photo
+import com.example.pexelapp.domain.model.Photo
 
 class BookmarksPhotoPagingSource(
     private val dataBaseSource: DataBaseSource,

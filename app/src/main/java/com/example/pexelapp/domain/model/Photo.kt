@@ -1,6 +1,4 @@
-package com.example.pexelapp.domain
-
-import kotlinx.coroutines.flow.Flow
+package com.example.pexelapp.domain.model
 
 data class Photo(
     val id: Int = 0,

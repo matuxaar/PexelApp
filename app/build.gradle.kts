@@ -74,10 +74,6 @@ dependencies {
     implementation("com.google.dagger:dagger:2.47")
     kapt("com.google.dagger:dagger-compiler:2.47")
 
-    //Hilt
-//    implementation("com.google.dagger:hilt-android:2.44")
-//    kapt("com.google.dagger:hilt-android-compiler:2.44")
-
     //Moshi
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
@@ -88,8 +84,14 @@ dependencies {
     //Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    //Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     //Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
+
+    //Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     //Compose
     implementation("androidx.core:core-ktx:1.12.0")

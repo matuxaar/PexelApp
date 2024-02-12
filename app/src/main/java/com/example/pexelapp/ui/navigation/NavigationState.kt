@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.pexelapp.domain.Photo
 
 class NavigationState(
     val navHostController: NavHostController
@@ -21,13 +20,14 @@ class NavigationState(
         }
     }
 
-    fun navigateToDetails(photoId: Int) {
-        navHostController.navigate(Screen.DetailsScreen.getRouteWithArgs(photoId))
+    fun navigateToDetails(photoId: Int, isFromBookmarks: Boolean) {
+        navHostController.navigate(Screen.DetailsScreen.getRouteWithArgs(photoId, isFromBookmarks))
     }
 
     fun navigateBack() {
         navHostController.popBackStack()
     }
+
 }
 
 @Composable

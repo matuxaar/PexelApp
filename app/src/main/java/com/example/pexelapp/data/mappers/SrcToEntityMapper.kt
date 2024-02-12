@@ -1,7 +1,7 @@
 package com.example.pexelapp.data.mappers
 
 import com.example.pexelapp.data.database.SrcEntity
-import com.example.pexelapp.domain.Src
+import com.example.pexelapp.domain.model.Src
 import javax.inject.Inject
 
 class SrcToEntityMapper @Inject constructor() {

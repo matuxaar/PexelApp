@@ -1,6 +1,6 @@
 package com.example.pexelapp.data.models
 
-import com.example.pexelapp.domain.Src
+import com.example.pexelapp.domain.model.Src
 import com.squareup.moshi.Json
 
 data class PhotoResponse(
@@ -9,6 +9,5 @@ data class PhotoResponse(
     @Json(name = "height") val height: Int? = null,
     @Json(name = "url") val url: String? = null,
     @Json(name = "photographer") val photographer: String? = null,
-    @Json(name = "liked") val liked: Boolean? = null,
     @Json(name = "src") val src: Src? = null
 )

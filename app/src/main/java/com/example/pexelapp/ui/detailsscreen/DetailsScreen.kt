@@ -1,8 +1,6 @@
 package com.example.pexelapp.ui.detailsscreen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.scaleIn
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,52 +17,47 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.Coil
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.pexelapp.R
 import com.example.pexelapp.di.ViewModelFactoryState
 import com.example.pexelapp.di.daggerViewModel
-import com.example.pexelapp.domain.Photo
+import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.ui.component.ErrorDetails
+import com.example.pexelapp.ui.component.HorizontalProgressBar
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
-import com.example.pexelapp.ui.theme.Black
-import com.example.pexelapp.ui.theme.Gray
 
 @Composable
 fun DetailsScreen(
     viewModelFactoryState: ViewModelFactoryState,
     photoId: Int,
-    onClick: () -> Photo,
     onBackPress: () -> Unit,
-    isFromBookmarks: Boolean
+    isFromBookmarks: Boolean,
+    onNavigateToHomeClick: () -> Unit
 ) {
     val detailsViewModel =
         daggerViewModel<DetailsViewModel>(factory = viewModelFactoryState.viewModelFactory)
-    val state by detailsViewModel.detailsStateFlow.collectAsState()
+    val state = detailsViewModel.detailsStateFlow.collectAsState()
+
+
 
     LaunchedEffect(Unit) {
         detailsViewModel.getPhoto(photoId, isFromBookmarks)
@@ -77,7 +70,12 @@ fun DetailsScreen(
         }
     }
 
-    DetailsScreenContent(detailsScreenState = state, detailsActionHandler = handleAction)
+    DetailsScreenContent(
+        detailsScreenState = state.value,
+        detailsActionHandler = handleAction,
+        LocalContext.current,
+        onNavigateToHomeClick,
+    )
 
 
 }
@@ -86,28 +84,39 @@ fun DetailsScreen(
 private fun DetailsScreenContent(
     detailsScreenState: DetailsScreenState,
     detailsActionHandler: (DetailsScreenAction) -> Unit,
+    context: Context,
+    onNavigateToHomeClick: () -> Unit,
 ) {
     val photo = detailsScreenState.photo
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-//        AnimatedVisibility(visible = state.isLoading) {
-//
-//        }
-//        if (state.isLoading) {
-//            CircularProgressIndicator()
-//        }
         TopBar(photo.photographer,
             onBackPress = {
                 detailsActionHandler(DetailsScreenAction.BackPress)
             }
         )
+        if (detailsScreenState.isLoading) {
+            HorizontalProgressBar()
+        } else if (detailsScreenState.isError) {
+            ErrorDetails {
+                onNavigateToHomeClick()
+            }
+        }
         PhotoItem(photo = photo)
         BottomRow(
             onClick = {
                 detailsActionHandler(DetailsScreenAction.Like)
             },
-            liked = photo.liked
+            detailsScreenState = detailsScreenState,
+            onDownloadClick = {
+                val downloadAction = DetailsScreenAction.Download(
+                    detailsScreenState.photo.src.original,
+                    context,
+                    detailsScreenState.photo.id
+                )
+                detailsActionHandler(downloadAction)
+            }
         )
     }
 }
@@ -118,9 +127,13 @@ private fun PhotoItem(photo: Photo) {
         modifier = Modifier
             .clip(shape = RoundedCornerShape(20.dp))
             .background(Color.Transparent)
-            .padding(horizontal = 24.dp, vertical = 21.dp)
+            .padding(24.dp)
     ) {
-        AsyncImage(model = photo.src.original, contentDescription = null)
+        AsyncImage(
+            model = photo.src.original,
+            contentDescription = null,
+            placeholder = painterResource(id = R.drawable.ic_vector_for_placeholder)
+        )
     }
 }
 
@@ -129,7 +142,7 @@ private fun TopBar(photographer: String, onBackPress: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, top = 16.dp, end = 24.dp),
+            .padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BackButton(onBackPress)
@@ -145,7 +158,8 @@ private fun Photographer(photographer: String) {
         fontSize = 18.sp,
         fontFamily = FontFamily(Font(R.font.mulish_regular)),
         fontWeight = FontWeight(700),
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        color = MaterialTheme.colorScheme.onBackground
     )
 }
 
@@ -156,47 +170,52 @@ private fun BackButton(onBackPressed: () -> Unit) {
         modifier = Modifier
             .clip(shape = RoundedCornerShape(12.dp))
             .size(48.dp)
-            .background(Gray)
+            .background(MaterialTheme.colorScheme.onTertiary)
             .clickable { onBackPressed() },
         contentAlignment = Alignment.Center
     ) {
 
         Icon(
             painter = painterResource(id = R.drawable.ic_icon_back),
-            contentDescription = null
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onBackground
         )
     }
 }
 
 @Composable
-private fun BottomRow(onClick: () -> Unit, liked: Boolean) {
+private fun BottomRow(
+    onClick: () -> Unit,
+    detailsScreenState: DetailsScreenState,
+    onDownloadClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(24.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        DownloadRow()
-        AddToBookmarksButton(onClick, liked)
+        DownloadRow(onDownloadClick)
+        AddToBookmarksButton(onClick, detailsScreenState)
     }
 }
 
 @Composable
-private fun DownloadRow() {
+private fun DownloadRow(onDownloadClick: () -> Unit) {
     Row(
         modifier = Modifier
             .width(180.dp)
             .height(48.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(Gray),
+            .background(MaterialTheme.colorScheme.onTertiary),
         verticalAlignment = Alignment.CenterVertically
     ) {
-//        DownloadButton()
+        DownloadButton(onDownloadClick)
         Spacer(modifier = Modifier.size(18.dp))
         Text(
             text = "Download",
             textAlign = TextAlign.Center,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             fontWeight = FontWeight(600),
             fontFamily = FontFamily(Font(R.font.mulish_regular))
@@ -205,12 +224,12 @@ private fun DownloadRow() {
 }
 
 @Composable
-private fun DownloadButton(imageUrl: String, onClick: () -> Unit) {
+private fun DownloadButton(onDownloadClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .clickable { }
+            .clip(shape = RoundedCornerShape(60.dp))
             .background(Color.Transparent)
-            .clickable { onClick() },
+            .clickable { onDownloadClick() },
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -226,29 +245,26 @@ private fun DownloadButton(imageUrl: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun AddToBookmarksButton(onClick: () -> Unit, liked: Boolean) {
-    val icon = if (liked) R.drawable.ic_filled_bookmark_icon else R.drawable.ic_bookmark_icon
+private fun AddToBookmarksButton(
+    onAddToBookmark: () -> Unit,
+    detailsScreenState: DetailsScreenState
+) {
+    val icon = if (detailsScreenState.photo.liked) R.drawable.ic_filled_bookmark_icon
+    else R.drawable.ic_bookmark_icon
     Box(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(60.dp))
-            .background(Gray)
+            .background(MaterialTheme.colorScheme.onTertiary)
             .size(48.dp)
-            .clickable { onClick() },
+            .clickable { onAddToBookmark() },
         contentAlignment = Alignment.Center
     ) {
-        Image(
+        Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            alignment = Alignment.Center,
+            tint = if (detailsScreenState.photo.liked) MaterialTheme.colorScheme.onPrimary
+            else MaterialTheme.colorScheme.onBackground
         )
 
     }
 }
-
-//fun saveImageToDevice(imageUrl: String) {
-//    val request = ImageRequest.Builder()
-//        .data(imageUrl)
-//        .build()
-//
-//    val file = Coil.imageLoader().execute(request)
-//}

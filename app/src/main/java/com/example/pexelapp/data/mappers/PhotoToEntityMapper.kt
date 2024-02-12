@@ -1,7 +1,7 @@
 package com.example.pexelapp.data.mappers
 
 import com.example.pexelapp.data.database.PhotoEntity
-import com.example.pexelapp.domain.Photo
+import com.example.pexelapp.domain.model.Photo
 import javax.inject.Inject
 
 class PhotoToEntityMapper @Inject constructor() {

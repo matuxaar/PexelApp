@@ -1,5 +1,6 @@
 package com.example.pexelapp.data.network
 
+import com.example.pexelapp.data.models.CollectionsResponse
 import com.example.pexelapp.data.models.PhotoResponse
 import com.example.pexelapp.data.models.Response
 import kotlinx.coroutines.flow.Flow
@@ -26,4 +27,9 @@ interface PhotoService {
     suspend fun getPhoto(
         @Path("id") id: Int
     ): PhotoResponse
+
+    @GET("collections/featured")
+    suspend fun getFeaturedCollections(
+        @QueryMap params: Map<String, Int>
+    ): CollectionsResponse
 }

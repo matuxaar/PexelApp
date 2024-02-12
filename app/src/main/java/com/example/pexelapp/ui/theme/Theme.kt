@@ -17,29 +17,30 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = BlackDarkTheme,
     secondary = PurpleGrey80,
     tertiary = Pink80,
     background = BlackDarkTheme,
     surface = Color(0xFFFFFBFE),
     onPrimary = Red,
     onSecondary = BlackDarkTheme,
-    onTertiary = Color.White,
+    onTertiary = GrayDarkTheme,
     onBackground = White,
-    onSurface = Color(0xFF1C1B1F),
+    onSurface = DarkGrayDarkTheme,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = White,
     secondary = PurpleGrey40,
     tertiary = Pink40,
     background = White,
     surface = Color(0xFFFFFBFE),
     onPrimary = Red,
     onSecondary = White,
-    onTertiary = Color.White,
+    onTertiary = Gray,
     onBackground = Black,
-    onSurface = Color(0xFF1C1B1F),
+    onSurface = DarkGray,
+
 
 )
 
@@ -47,7 +48,7 @@ private val LightColorScheme = lightColorScheme(
 fun PexelAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -64,7 +65,7 @@ fun PexelAppTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

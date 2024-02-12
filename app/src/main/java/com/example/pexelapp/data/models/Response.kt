@@ -1,6 +1,6 @@
 package com.example.pexelapp.data.models
 
-import com.example.pexelapp.domain.Photo
+import com.example.pexelapp.domain.model.Photo
 import com.squareup.moshi.Json
 
 data class Response(

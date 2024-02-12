@@ -1,8 +1,8 @@
 package com.example.pexelapp.data.mappers
 
 import com.example.pexelapp.data.models.PhotoResponse
-import com.example.pexelapp.domain.Photo
-import com.example.pexelapp.domain.Src
+import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.domain.model.Src
 import javax.inject.Inject
 
 class PhotoMapper @Inject constructor() {
@@ -14,7 +14,6 @@ class PhotoMapper @Inject constructor() {
             height = height ?: 0,
             url = url.orEmpty(),
             photographer = photographer.orEmpty(),
-            liked = liked ?: false,
             src = src ?: Src()
 
             )

@@ -1,4 +1,4 @@
-package com.example.pexelapp.domain
+package com.example.pexelapp.domain.model
 
 data class Src(
     val landscape: String = "",

@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.pexelapp.domain.Photo
+import com.example.pexelapp.domain.model.Photo
 
 @Composable
 fun AppNavGraph(
     navHostController: NavHostController,
-    detailsScreenContent: @Composable (Photo) -> Unit,
+    detailsScreenContent: @Composable (Photo, Boolean) -> Unit,
     bookmarkScreenContent: @Composable () -> Unit,
     homeScreenContent: @Composable () -> Unit
 ) {

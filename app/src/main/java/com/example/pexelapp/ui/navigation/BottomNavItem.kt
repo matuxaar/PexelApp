@@ -2,13 +2,13 @@ package com.example.pexelapp.ui.navigation
 
 import com.example.pexelapp.R
 
-sealed class BottomNavItem(val screen: Screen, val icon: Int) {
+sealed class BottomNavItem(val screen: Screen, val activeIcon: Int) {
     object Home : BottomNavItem(
         screen = Screen.MainScreen,
-        icon = R.drawable.ic_home_icon
+        activeIcon = R.drawable.ic_home_icon
     )
     object Bookmark : BottomNavItem(
         screen = Screen.BookmarkScreen,
-        icon = R.drawable.ic_bookmark_icon_bottom
+        activeIcon = R.drawable.ic_bookmark_icon_bottom
     )
 }

@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pexelapp.di.ViewModelFactoryState
@@ -22,6 +23,7 @@ import com.example.pexelapp.ui.navigation.AppNavGraph
 import com.example.pexelapp.ui.navigation.Screen
 import com.example.pexelapp.ui.navigation.rememberNavigationState
 import com.example.pexelapp.ui.theme.PexelAppTheme
+import com.example.pexelapp.ui.theme.White
 import dagger.internal.DaggerGenerated
 import javax.inject.Inject
 
@@ -33,6 +35,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         (applicationContext as DaggerApp).appComponent.inject(this)
         val viewModelFactoryState = ViewModelFactoryState(factory)
+        installSplashScreen()
         setContent {
             PexelAppTheme {
                 // A surface container using the 'background' color from the theme
