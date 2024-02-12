@@ -32,5 +32,4 @@ interface Repository {
 
     suspend fun saveLikeState(photo: Photo)
 
-    suspend fun getPhotosFromDb(): List<Photo>
 }
