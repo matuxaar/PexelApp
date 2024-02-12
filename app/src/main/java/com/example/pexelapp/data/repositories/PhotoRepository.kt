@@ -1,4 +1,4 @@
-package com.example.pexelapp.data.repositoriesimpl
+package com.example.pexelapp.data.repositories
 
 import android.content.Context
 import android.content.Intent
@@ -20,9 +20,9 @@ import com.example.pexelapp.data.mappers.PhotoToEntityMapper
 import com.example.pexelapp.data.network.PhotoService
 import com.example.pexelapp.data.paging.BookmarksPhotoPagingSource
 import com.example.pexelapp.data.source.DataBaseSource
-import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.FeaturedCollection
+import com.example.pexelapp.domain.model.Photo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -32,7 +32,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
-class RepositoryImpl @Inject constructor(
+class PhotoRepository @Inject constructor(
     private val photoService: PhotoService,
     private val dataBaseSource: DataBaseSource,
     private val photoMapper: PhotoMapper,
@@ -47,9 +47,8 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getPhotoFromDb(id: Int): Flow<Photo> =
+    override fun subscribeToPhoto(id: Int): Flow<Photo> =
         dataBaseSource.getPhotoById(id).map { photoEntityMapper(it) }
-
 
     override suspend fun getCuratedPhotos(page: Int): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
@@ -76,8 +75,7 @@ class RepositoryImpl @Inject constructor(
         dataBaseSource.removeFromBookmark(photoId)
     }
 
-
-    override fun getAllImagesFromDb(): Flow<PagingData<Photo>> =
+    override fun subscribeToPhotos(): Flow<PagingData<Photo>> =
         Pager(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
@@ -90,7 +88,6 @@ class RepositoryImpl @Inject constructor(
             },
             initialKey = 0
         ).flow.flowOn(Dispatchers.IO)
-
 
     override suspend fun savePhotoToDevice(context: Context, imageUrl: String, photoId: Int) {
         return withContext(Dispatchers.IO) {
@@ -150,7 +147,6 @@ class RepositoryImpl @Inject constructor(
     override suspend fun getPhotosFromDb(): List<Photo> = withContext(Dispatchers.IO) {
         dataBaseSource.getAllPhotosFromDb().map { photoEntityMapper(it) }
     }
-
 
     companion object {
         private const val PAGE_SIZE = 30

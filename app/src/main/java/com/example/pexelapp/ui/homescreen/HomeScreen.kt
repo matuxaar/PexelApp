@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -98,7 +96,6 @@ fun HomeScreen(
             homeViewModel.loadNew()
         }
     )
-
 }
 
 @Composable
@@ -137,7 +134,6 @@ private fun HomeScreenContent(
                 onDetailsClickFromHome(it)
             }
         }
-
     }
 }
 
@@ -148,7 +144,6 @@ private fun SearchBar(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val searchText by viewModel.searchStateFlow.collectAsState()
-
 
     SearchBar(
         modifier = Modifier
@@ -223,7 +218,6 @@ private fun FeaturedRow(
             Spacer(modifier = Modifier.width(12.dp))
         }
     }
-
 }
 
 @Composable

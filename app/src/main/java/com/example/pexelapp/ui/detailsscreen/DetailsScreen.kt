@@ -57,8 +57,6 @@ fun DetailsScreen(
         daggerViewModel<DetailsViewModel>(factory = viewModelFactoryState.viewModelFactory)
     val state = detailsViewModel.detailsStateFlow.collectAsState()
 
-
-
     LaunchedEffect(Unit) {
         detailsViewModel.getPhoto(photoId, isFromBookmarks)
     }
@@ -76,8 +74,6 @@ fun DetailsScreen(
         LocalContext.current,
         onNavigateToHomeClick,
     )
-
-
 }
 
 @Composable
@@ -265,6 +261,5 @@ private fun AddToBookmarksButton(
             tint = if (detailsScreenState.photo.liked) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.onBackground
         )
-
     }
 }

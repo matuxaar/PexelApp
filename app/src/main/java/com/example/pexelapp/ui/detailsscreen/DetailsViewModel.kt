@@ -9,9 +9,6 @@ import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,6 +34,7 @@ class DetailsViewModel @Inject constructor(
                 }
 
             }
+
             DetailsScreenAction.BackPress -> backPress()
         }
     }
@@ -77,11 +75,11 @@ class DetailsViewModel @Inject constructor(
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
             if (isFromBookmarks) {
                 //if (repository.getLikeState(photoId)) {
-                    repository.getPhotoFromDb(photoId)
-                        .collect{ photo ->
-                            _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
-                        }
-              //  }
+                repository.subscribeToPhoto(photoId)
+                    .collect { photo ->
+                        _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                    }
+                //  }
             } else {
                 repository.getPhoto(photoId)
                     .collect { photo ->
@@ -94,7 +92,6 @@ class DetailsViewModel @Inject constructor(
         _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         return _detailsStateFlow.value.photo
     }
-
 
     private fun addOrRemoveToBookmarks(isFromBookmarks: Boolean) {
         val photo = _detailsStateFlow.value.photo
@@ -121,6 +118,4 @@ class DetailsViewModel @Inject constructor(
             repository.savePhotoToDevice(context, imageUrl, photoId)
         }
     }
-
-
 }

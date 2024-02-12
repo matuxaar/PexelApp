@@ -1,6 +1,5 @@
 package com.example.pexelapp.ui.component
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -11,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.pexelapp.domain.model.Photo
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PhotoList(
     photoList: List<Photo>,

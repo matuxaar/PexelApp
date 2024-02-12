@@ -2,9 +2,9 @@ package com.example.pexelapp.ui.homescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.FeaturedCollection
+import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.ui.homescreen.data.HomeScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,7 +60,6 @@ class HomeViewModel @Inject constructor(
                                 addAll(old)
                                 addAll(newList)
                             }
-
                             _list.value = new
                         },
                         onFailure = {
@@ -68,7 +67,6 @@ class HomeViewModel @Inject constructor(
                                 _homeScreenState.value =
                                     _homeScreenState.value.copy(isError = true, isLoading = true)
                             }
-
                         }
                     )
             } else {
@@ -98,7 +96,6 @@ class HomeViewModel @Inject constructor(
                 _homeScreenState.value =
                     _homeScreenState.value.copy(isLoading = false, isError = true)
             }
-
         }
     }
 
