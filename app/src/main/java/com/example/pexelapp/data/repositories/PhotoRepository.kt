@@ -48,7 +48,11 @@ class PhotoRepository @Inject constructor(
     }
 
     override fun subscribeToPhoto(id: Int): Flow<Photo> =
-        dataBaseSource.getPhotoById(id).map { photoEntityMapper(it) }
+        dataBaseSource.getPhotoById(id)
+            .map { photoEntity ->
+                photoEntity ?: throw NullPointerException("PhotoEntity is null")
+                photoEntityMapper(photoEntity)
+            }
 
     override suspend fun getCuratedPhotos(page: Int): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
@@ -142,10 +146,6 @@ class PhotoRepository @Inject constructor(
 
     override suspend fun saveLikeState(photo: Photo) = withContext(Dispatchers.IO) {
         dataBaseSource.saveLikeState(photoToEntityMapper(photo))
-    }
-
-    override suspend fun getPhotosFromDb(): List<Photo> = withContext(Dispatchers.IO) {
-        dataBaseSource.getAllPhotosFromDb().map { photoEntityMapper(it) }
     }
 
     companion object {

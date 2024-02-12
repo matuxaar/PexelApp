@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
-import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,12 +44,7 @@ class DetailsViewModel @Inject constructor(
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
             try {
-                val photo = getPhoto(photoId, isFromBookmarks)
-                val isLiked = repository.getLikeState(photoId)
-                photo.let { photo ->
-                    val updatedPhoto = photo.copy(liked = isLiked)
-                    _detailsStateFlow.update { currentState -> currentState.copy(photo = updatedPhoto) }
-                }
+                getPhoto(photoId, isFromBookmarks)
             } catch (e: Exception) {
                 _detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
             }
@@ -70,47 +65,54 @@ class DetailsViewModel @Inject constructor(
 
     }
 
-    fun getPhoto(photoId: Int, isFromBookmarks: Boolean): Photo {
+    fun getPhoto(photoId: Int, isFromBookmarks: Boolean) {
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
             if (isFromBookmarks) {
-                //if (repository.getLikeState(photoId)) {
                 repository.subscribeToPhoto(photoId)
-                    .collect { photo ->
-                        _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                    .catch {
+                        //_detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
                     }
-                //  }
+                    .collect { photo ->
+                        if (photo != null) {
+                            _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                        }
+                    }
             } else {
                 repository.getPhoto(photoId)
                     .collect { photo ->
-                        _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                        if (photo != null) {
+                            _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                        }
                     }
             }
-
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         }
         _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
-        return _detailsStateFlow.value.photo
     }
 
     private fun addOrRemoveToBookmarks(isFromBookmarks: Boolean) {
         val photo = _detailsStateFlow.value.photo
-        val newLikedStatus = !photo.liked
-        viewModelScope.launch {
-            if (isFromBookmarks) {
-                repository.removeFromBookmarks(photo.id)
-            } else {
-                repository.addToBookmarks(photo)
+        if (photo != null) {
+            val newLikedStatus = !photo.liked
+            viewModelScope.launch {
+                if (isFromBookmarks) {
+                    repository.removeFromBookmarks(photo.id)
+                    _detailsStateFlow.update { currentState ->
+                        currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
+                    }
+                } else {
+                    repository.addToBookmarks(photo)
+                    _detailsStateFlow.update { currentState ->
+                        currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
+                    }
+                }
+                repository.saveLikeState(photo)
                 _detailsStateFlow.update { currentState ->
                     currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
                 }
             }
-            repository.saveLikeState(photo)
-            _detailsStateFlow.update { currentState ->
-                currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
-            }
         }
-
     }
 
     private fun savePhotoToDevice(context: Context, imageUrl: String, photoId: Int) {
