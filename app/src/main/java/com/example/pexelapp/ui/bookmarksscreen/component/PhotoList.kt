@@ -7,13 +7,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.component.ErrorBookmarks
-import com.example.pexelapp.ui.component.HorizontalProgressBar
 import kotlinx.coroutines.flow.Flow
 
 @Composable

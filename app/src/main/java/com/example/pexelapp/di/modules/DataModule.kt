@@ -1,6 +1,6 @@
 package com.example.pexelapp.di.modules
 
-import com.example.pexelapp.data.repositoriesimpl.RepositoryImpl
+import com.example.pexelapp.data.repositories.PhotoRepository
 import com.example.pexelapp.domain.Repository
 import dagger.Binds
 import dagger.Module
@@ -9,6 +9,6 @@ import dagger.Module
 interface DataModule {
 
     @Binds
-    fun bindRepository(impl: RepositoryImpl): Repository
+    fun bindRepository(impl: PhotoRepository): Repository
 
 }

@@ -29,7 +29,6 @@ interface AppComponent {
     fun inject(activity: MainActivity)
 }
 
-
 @Composable
 inline fun <reified VM : ViewModel> daggerViewModel(
     factory: ViewModelProvider.Factory,

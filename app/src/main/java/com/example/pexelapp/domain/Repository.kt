@@ -14,13 +14,13 @@ interface Repository {
 
     fun getPhoto(id: Int): Flow<Photo>
 
-    fun getPhotoFromDb(id: Int): Flow<Photo>
+    fun subscribeToPhoto(id: Int): Flow<Photo>
 
     suspend fun addToBookmarks(photo: Photo)
 
     suspend fun removeFromBookmarks(photoId: Int)
 
-    fun getAllImagesFromDb(): Flow<PagingData<Photo>>
+    fun subscribeToPhotos(): Flow<PagingData<Photo>>
 
     suspend fun savePhotoToDevice(context: Context, imageUrl: String, photoId: Int)
 

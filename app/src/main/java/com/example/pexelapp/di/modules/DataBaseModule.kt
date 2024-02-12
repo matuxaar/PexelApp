@@ -20,10 +20,8 @@ class DataBaseModule {
     @Provides
     @Singleton
     fun provideDataBase(context: Context): AppDataBase {
-
         return Room.databaseBuilder(context, AppDataBase::class.java, DATABASE_NAME)
             .build()
-
     }
 
     @Provides
