@@ -2,14 +2,14 @@ package com.example.pexelapp.ui.bookmarksscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import com.example.pexelapp.domain.Repository
-import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.bookmarksscreen.data.BookmarkScreenState
-import kotlinx.coroutines.flow.Flow
+import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenAction
+import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,21 +17,30 @@ class BookmarksViewModel @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _photoListStateFlow =
-        MutableStateFlow<Flow<PagingData<Photo>>>(emptyFlow())
-    val photoListStateFlow = _photoListStateFlow.asStateFlow()
-
     private val _bookmarksScreenState =
-        MutableStateFlow(BookmarkScreenState())
+        MutableStateFlow(BookmarksScreenState())
     val bookmarksScreenState = _bookmarksScreenState.asStateFlow()
+
+    fun handleAction(action: BookmarksScreenAction) {
+        when (action) {
+            is BookmarksScreenAction.Init -> getLikedPhotos()
+        }
+    }
 
     fun getLikedPhotos() {
         viewModelScope.launch {
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
-            _photoListStateFlow.value = repository.subscribeToPhotos()
+            val photos = repository.subscribeToPhotos()
+            _bookmarksScreenState.value.photoList.runCatching {
+
+            }.onSuccess {
+                _bookmarksScreenState.update { currentState ->
+                    currentState.copy(photoList = photos)
+                }
+            }.onFailure {
+                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isError = true)
+            }
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
         }
     }
-
-
 }

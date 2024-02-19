@@ -104,7 +104,7 @@ private fun DetailsScreenContent(
             onClick = {
                 detailsActionHandler(DetailsScreenAction.Like)
             },
-            detailsScreenState = detailsScreenState,
+            liked = detailsScreenState.photo.liked,
             onDownloadClick = {
                 val downloadAction = DetailsScreenAction.Download(
                     detailsScreenState.photo.src.original,
@@ -182,7 +182,7 @@ private fun BackButton(onBackPressed: () -> Unit) {
 @Composable
 private fun BottomRow(
     onClick: () -> Unit,
-    detailsScreenState: DetailsScreenState,
+    liked: Boolean,
     onDownloadClick: () -> Unit
 ) {
     Row(
@@ -192,7 +192,7 @@ private fun BottomRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         DownloadRow(onDownloadClick)
-        AddToBookmarksButton(onClick, detailsScreenState)
+        AddToBookmarksButton(onClick, liked)
     }
 }
 
@@ -243,9 +243,9 @@ private fun DownloadButton(onDownloadClick: () -> Unit) {
 @Composable
 private fun AddToBookmarksButton(
     onAddToBookmark: () -> Unit,
-    detailsScreenState: DetailsScreenState
+    liked: Boolean
 ) {
-    val icon = if (detailsScreenState.photo.liked) R.drawable.ic_filled_bookmark_icon
+    val icon = if (liked) R.drawable.ic_filled_bookmark_icon
     else R.drawable.ic_bookmark_icon
     Box(
         modifier = Modifier
@@ -258,7 +258,7 @@ private fun AddToBookmarksButton(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            tint = if (detailsScreenState.photo.liked) MaterialTheme.colorScheme.onPrimary
+            tint = if (liked) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.onBackground
         )
     }
