@@ -5,17 +5,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.domain.use_case.GetPhotoUseCase
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class DetailsViewModel @Inject constructor(
-    private val repository: Repository
+    private val repository: Repository,
+    private val getPhotoUseCase: GetPhotoUseCase
 ) : ViewModel() {
 
     private val _detailsStateFlow = MutableStateFlow(DetailsScreenState())
@@ -35,35 +38,15 @@ class DetailsViewModel @Inject constructor(
                 }
 
             }
-
             DetailsScreenAction.BackPress -> backPress()
         }
     }
 
     private fun init(photoId: Int, isFromBookmarks: Boolean) {
-
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
             getPhoto(photoId, isFromBookmarks)
-            repository.subscribeToPhoto(photoId)
-                .catch {
-                    //_detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
-                }
-                .collect { photo ->
-                    if (photo != null) {
-                        if (isFromBookmarks) {
-                            _detailsStateFlow.update { currentState ->
-                                currentState.copy(photo = Photo(liked = true))
-                            }
-                        } else {
-                            _detailsStateFlow.update { currentState ->
-                                currentState.copy(photo = photo)
-                            }
-                        }
-                    }
-                }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
-
         }
     }
 
@@ -82,23 +65,12 @@ class DetailsViewModel @Inject constructor(
     fun getPhoto(photoId: Int, isFromBookmarks: Boolean) {
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
-            if (isFromBookmarks) {
-                repository.subscribeToPhoto(photoId)
-                    .catch {
-                        //_detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
-                    }
-                    .collect { photo ->
-                        if (photo != null) {
-                            _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
-                        }
-                    }
-            } else {
-                repository.getPhoto(photoId)
-                    .collect { photo ->
-                        if (photo != null) {
-                            _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
-                        }
-                    }
+            getPhotoUseCase.execute(photoId, isFromBookmarks).catch {
+
+            }.collect { photo ->
+                if (photo != null) {
+                    _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                }
             }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         }

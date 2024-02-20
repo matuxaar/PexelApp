@@ -133,7 +133,10 @@ private fun HomeScreenContent(
                 )
 
             }
-            PhotoList(photoList = homeScreenState.photoList, lazyStaggeredGridState) {
+            PhotoList(
+                photoList = homeScreenState.photoList,
+                lazyStaggeredGridState
+            ) {
                 onDetailsClickFromHome(it)
             }
         }
