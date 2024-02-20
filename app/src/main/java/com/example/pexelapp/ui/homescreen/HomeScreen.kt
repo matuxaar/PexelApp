@@ -43,10 +43,12 @@ import com.example.pexelapp.R
 import com.example.pexelapp.di.ViewModelFactoryState
 import com.example.pexelapp.di.daggerViewModel
 import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenAction
 import com.example.pexelapp.ui.component.ErrorHome
 import com.example.pexelapp.ui.component.ErrorSearch
 import com.example.pexelapp.ui.component.HorizontalProgressBar
 import com.example.pexelapp.ui.component.PhotoList
+import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 import com.example.pexelapp.ui.homescreen.data.HomeScreenState
 import com.example.pexelapp.ui.theme.Red
 import com.example.pexelapp.ui.theme.White
@@ -65,8 +67,12 @@ fun HomeScreen(
     val searchQuery = homeViewModel.searchStateFlow.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
+    val handleAction: (HomeScreenAction) -> Unit = {
+        homeViewModel.handleAction(it)
+    }
+
     LaunchedEffect(Unit) {
-        homeViewModel.loadNew()
+        handleAction(HomeScreenAction.Init)
     }
 
     val shouldStartPaginate = remember {
@@ -123,7 +129,7 @@ private fun HomeScreenContent(
         } else {
             if (searchQuery.value == "") {
                 FeaturedRow(
-                    homeViewModel,
+                    homeScreenState,
                     onItemSelected = {
                         homeViewModel.setSearch(it)
                     }
@@ -194,10 +200,10 @@ private fun SearchBar(
 
 @Composable
 private fun FeaturedRow(
-    viewModel: HomeViewModel,
+    homeScreenState: HomeScreenState,
     onItemSelected: (String) -> Unit
 ) {
-    val featuredCollectionsList = viewModel.getCollections().take(7)
+    val featuredCollectionsList = homeScreenState.collections
     var selectedPosition by remember {
         mutableStateOf<Int?>(null)
     }

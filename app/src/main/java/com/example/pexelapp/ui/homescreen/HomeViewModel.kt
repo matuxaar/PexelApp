@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.FeaturedCollection
 import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 import com.example.pexelapp.ui.homescreen.data.HomeScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,11 +29,13 @@ class HomeViewModel @Inject constructor(
     private val _searchStateFlow = MutableStateFlow("")
     val searchStateFlow = _searchStateFlow.asStateFlow()
 
-    private val _collectionsStateFlow: MutableStateFlow<List<FeaturedCollection>> =
-        MutableStateFlow(emptyList())
-    val collectionsStateFlow = _collectionsStateFlow.asStateFlow()
+    fun handleAction(action: HomeScreenAction) {
+        when(action) {
+            is HomeScreenAction.Init -> init()
+        }
+    }
 
-    init {
+    private fun init() {
         _searchStateFlow
             .debounce(300)
             .onEach {
@@ -40,6 +43,7 @@ class HomeViewModel @Inject constructor(
                 loadNew(it.isNotEmpty())
             }
             .launchIn(viewModelScope)
+        getCollections()
     }
 
     fun setSearch(search: String) {
@@ -101,9 +105,11 @@ class HomeViewModel @Inject constructor(
 
     fun getCollections(): List<FeaturedCollection> {
         viewModelScope.launch {
-            _collectionsStateFlow.value = repository.getCollections()
+            _homeScreenState.update { currentState ->
+                currentState.copy(collections = repository.getCollections())
+            }
         }
-        return _collectionsStateFlow.value
+        return _homeScreenState.value.collections
     }
 
 
