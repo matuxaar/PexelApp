@@ -18,9 +18,4 @@ class DataBaseSource @Inject constructor(
 
     suspend fun removeFromBookmark(photoId: Int) = photoDao.removeFromBookmark(photoId)
 
-    suspend fun getLikeState(photoId: Int): Boolean = photoDao.getLikeState(photoId)
-
-    suspend fun saveLikeState(photoEntity: PhotoEntity) =
-        photoDao.saveLikeState(photoEntity)
-
 }

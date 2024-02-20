@@ -1,24 +1,21 @@
 package com.example.pexelapp.ui.detailsscreen
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pexelapp.domain.Repository
-import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.domain.use_case.AddOrRemoveUseCase
 import com.example.pexelapp.domain.use_case.GetPhotoUseCase
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class DetailsViewModel @Inject constructor(
-    private val repository: Repository,
-    private val getPhotoUseCase: GetPhotoUseCase
+    private val getPhotoUseCase: GetPhotoUseCase,
+    private val addOrRemoveUseCase: AddOrRemoveUseCase,
 ) : ViewModel() {
 
     private val _detailsStateFlow = MutableStateFlow(DetailsScreenState())
@@ -28,16 +25,7 @@ class DetailsViewModel @Inject constructor(
         when (action) {
             is DetailsScreenAction.Init -> init(action.photoId, isFromBookmarks)
             is DetailsScreenAction.Like -> addOrRemoveToBookmarks(isFromBookmarks)
-            is DetailsScreenAction.Download -> {
-                if (!isPhotoDownloaded(action.context, action.photoId)) {
-                    savePhotoToDevice(
-                        action.context,
-                        action.imageUrl,
-                        action.photoId
-                    )
-                }
-
-            }
+            is DetailsScreenAction.Download -> TODO()
             DetailsScreenAction.BackPress -> backPress()
         }
     }
@@ -48,14 +36,6 @@ class DetailsViewModel @Inject constructor(
             getPhoto(photoId, isFromBookmarks)
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         }
-    }
-
-    private fun isPhotoDownloaded(context: Context, photoId: Int): Boolean {
-        var status = false
-        viewModelScope.launch {
-            status = repository.isPhotoDownloaded(context, photoId)
-        }
-        return status
     }
 
     private fun backPress() {
@@ -69,38 +49,31 @@ class DetailsViewModel @Inject constructor(
 
             }.collect { photo ->
                 if (photo != null) {
-                    _detailsStateFlow.update { currentState -> currentState.copy(photo = photo) }
+                    _detailsStateFlow.update { currentState ->
+                        currentState.copy(
+                            photo = photo,
+                            isLiked = isFromBookmarks && photo != null,
+                            isLoading = !isFromBookmarks
+                        )
+                    }
+                } else {
+                    _detailsStateFlow.update { currentState ->
+                        currentState.copy(isError = true)
+                    }
                 }
             }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         }
-        _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
     }
 
     private fun addOrRemoveToBookmarks(isFromBookmarks: Boolean) {
         val photo = _detailsStateFlow.value.photo
-        if (photo != null) {
-            val newLikedStatus = !photo.liked
-            viewModelScope.launch {
-                if (isFromBookmarks) {
-                    repository.removeFromBookmarks(photo.id)
-                } else {
-                    repository.addToBookmarks(photo)
-                    _detailsStateFlow.update { currentState ->
-                        currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
-                    }
-                }
-                repository.saveLikeState(photo)
-                _detailsStateFlow.update { currentState ->
-                    currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
-                }
-            }
-        }
-    }
-
-    private fun savePhotoToDevice(context: Context, imageUrl: String, photoId: Int) {
+        val isLiked = _detailsStateFlow.value.isLiked
         viewModelScope.launch {
-            repository.savePhotoToDevice(context, imageUrl, photoId)
+            addOrRemoveUseCase.invoke(photo, isFromBookmarks)
+            _detailsStateFlow.update { currentState ->
+                currentState.copy(isLiked = !isLiked)
+            }
         }
     }
 }

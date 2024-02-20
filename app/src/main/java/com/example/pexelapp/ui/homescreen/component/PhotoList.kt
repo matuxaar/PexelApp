@@ -1,4 +1,4 @@
-package com.example.pexelapp.ui.component
+package com.example.pexelapp.ui.homescreen.component
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -9,16 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 
 @Composable
 fun PhotoList(
     photoList: List<Photo>,
     lazyVerticalStaggeredState: LazyStaggeredGridState,
-    onDetailsClickFromHome: (Int) -> Unit
+    onDetailsClickFromHome: (Int) -> Unit,
+    homeActionHandler: (HomeScreenAction) -> Unit
 ) {
     if (photoList.isEmpty()) {
         ErrorHome {
-
+            homeActionHandler(HomeScreenAction.ErrorHome)
         }
     } else {
         LazyVerticalStaggeredGrid(

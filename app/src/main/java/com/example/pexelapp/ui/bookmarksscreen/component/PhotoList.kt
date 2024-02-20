@@ -11,7 +11,6 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.component.ErrorBookmarks
 import kotlinx.coroutines.flow.Flow
 
 @Composable

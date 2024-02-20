@@ -9,32 +9,33 @@ import androidx.compose.ui.unit.sp
 import com.example.pexelapp.R
 
 val Mulish = FontFamily(
-    Font(R.font.mulish_regular),
-    Font(R.font.mulish_bold, FontWeight.Bold)
+    Font(R.font.mulish_regular)
 )
 
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Mulish,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 18.sp
     ),
     titleLarge = TextStyle(
         fontFamily = Mulish,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        fontSize = 18.sp,
+        lineHeight = 24.sp
     ),
     labelSmall = TextStyle(
         fontFamily = Mulish,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 18.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = Mulish,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 18.sp
     )
-
 )

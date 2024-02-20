@@ -1,4 +1,4 @@
-package com.example.pexelapp.ui.component
+package com.example.pexelapp.ui.homescreen.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding

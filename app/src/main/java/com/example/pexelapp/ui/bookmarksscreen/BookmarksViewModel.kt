@@ -2,15 +2,18 @@ package com.example.pexelapp.ui.bookmarksscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenAction
 import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class BookmarksViewModel @Inject constructor(
@@ -27,14 +30,18 @@ class BookmarksViewModel @Inject constructor(
         }
     }
 
-    fun getLikedPhotos() {
-        viewModelScope.launch {
-            _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
-            val photos = repository.subscribeToPhotos()
-            _bookmarksScreenState.update { currentState ->
-                currentState.copy(photoList = photos)
+    private fun getLikedPhotos() {
+        repository.subscribeToPhotos()
+            .cachedIn(viewModelScope)
+            .onStart {
+                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
             }
-            _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
-        }
+            .catch { }
+            .onEach {
+                _bookmarksScreenState.update { currentState ->
+                    currentState.copy(photoList = flowOf(it))
+                }
+                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
+            }.launchIn(viewModelScope)
     }
 }
