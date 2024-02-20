@@ -3,6 +3,7 @@ package com.example.pexelapp.ui.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ fun PlaceholderItem() {
         modifier = Modifier
             .clip(shape = RoundedCornerShape(20.dp))
             .width(155.dp)
+            .height(170.dp)
             .padding(top = 12.dp, end = 18.dp)
             .background(MaterialTheme.colorScheme.onTertiary),
         contentAlignment = Alignment.Center

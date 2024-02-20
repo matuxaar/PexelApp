@@ -31,14 +31,8 @@ class BookmarksViewModel @Inject constructor(
         viewModelScope.launch {
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
             val photos = repository.subscribeToPhotos()
-            _bookmarksScreenState.value.photoList.runCatching {
-
-            }.onSuccess {
-                _bookmarksScreenState.update { currentState ->
-                    currentState.copy(photoList = photos)
-                }
-            }.onFailure {
-                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isError = true)
+            _bookmarksScreenState.update { currentState ->
+                currentState.copy(photoList = photos)
             }
             _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
         }

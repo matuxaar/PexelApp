@@ -52,7 +52,7 @@ fun ErrorBookmarks(onNavigateToHomeClick: () -> Unit) {
             fontSize = 14.sp,
             fontWeight = FontWeight(500),
             fontFamily = FontFamily(Font(R.font.mulish_regular)),
-            color = MaterialTheme.colorScheme.onTertiary
+            color = MaterialTheme.colorScheme.onBackground
         )
         ExploreButton(onNavigateToHomeClick)
     }
@@ -70,7 +70,7 @@ fun ErrorHome(onCuratedPhotoClick: () -> Unit) {
             fontSize = 14.sp,
             fontWeight = FontWeight(500),
             fontFamily = FontFamily(Font(R.font.mulish_regular)),
-            color = MaterialTheme.colorScheme.onTertiary
+            color = MaterialTheme.colorScheme.onBackground
         )
         ExploreButton(
             onCuratedPhotoClick
@@ -90,7 +90,7 @@ fun ErrorDetails(onNavigateToHomeClick: () -> Unit) {
             fontSize = 14.sp,
             fontWeight = FontWeight(500),
             fontFamily = FontFamily(Font(R.font.mulish_regular)),
-            color = MaterialTheme.colorScheme.onTertiary
+            color = MaterialTheme.colorScheme.onBackground
         )
         ExploreButton(onNavigateToHomeClick)
     }

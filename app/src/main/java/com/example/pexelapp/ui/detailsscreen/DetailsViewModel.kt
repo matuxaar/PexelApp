@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
+import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,11 +44,24 @@ class DetailsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
-            try {
-                getPhoto(photoId, isFromBookmarks)
-            } catch (e: Exception) {
-                _detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
-            }
+            getPhoto(photoId, isFromBookmarks)
+            repository.subscribeToPhoto(photoId)
+                .catch {
+                    //_detailsStateFlow.value = _detailsStateFlow.value.copy(isError = true)
+                }
+                .collect { photo ->
+                    if (photo != null) {
+                        if (isFromBookmarks) {
+                            _detailsStateFlow.update { currentState ->
+                                currentState.copy(photo = Photo(liked = true))
+                            }
+                        } else {
+                            _detailsStateFlow.update { currentState ->
+                                currentState.copy(photo = photo)
+                            }
+                        }
+                    }
+                }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
 
         }
@@ -98,9 +112,6 @@ class DetailsViewModel @Inject constructor(
             viewModelScope.launch {
                 if (isFromBookmarks) {
                     repository.removeFromBookmarks(photo.id)
-                    _detailsStateFlow.update { currentState ->
-                        currentState.copy(photo = currentState.photo.copy(liked = newLikedStatus))
-                    }
                 } else {
                     repository.addToBookmarks(photo)
                     _detailsStateFlow.update { currentState ->

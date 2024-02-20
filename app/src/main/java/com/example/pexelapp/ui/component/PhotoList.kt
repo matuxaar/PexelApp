@@ -16,18 +16,24 @@ fun PhotoList(
     lazyVerticalStaggeredState: LazyStaggeredGridState,
     onDetailsClickFromHome: (Int) -> Unit
 ) {
-    LazyVerticalStaggeredGrid(
-        state = lazyVerticalStaggeredState,
-        modifier = Modifier.padding(start = 24.dp, end = 6.dp),
-        columns = StaggeredGridCells.Fixed(2),
-        content = {
-            items(photoList) {
-                PhotoItem(
-                    url = it.src.original,
-                    photoId = it.id,
-                    onClick = onDetailsClickFromHome
-                )
-            }
+    if (photoList.isEmpty()) {
+        ErrorHome {
+
         }
-    )
+    } else {
+        LazyVerticalStaggeredGrid(
+            state = lazyVerticalStaggeredState,
+            modifier = Modifier.padding(start = 24.dp, end = 6.dp),
+            columns = StaggeredGridCells.Fixed(2),
+            content = {
+                items(photoList) {
+                    PhotoItem(
+                        url = it.src.original,
+                        photoId = it.id,
+                        onClick = onDetailsClickFromHome
+                    )
+                }
+            }
+        )
+    }
 }

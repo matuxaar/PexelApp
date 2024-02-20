@@ -42,8 +42,6 @@ import androidx.compose.ui.unit.sp
 import com.example.pexelapp.R
 import com.example.pexelapp.di.ViewModelFactoryState
 import com.example.pexelapp.di.daggerViewModel
-import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenAction
 import com.example.pexelapp.ui.component.ErrorHome
 import com.example.pexelapp.ui.component.ErrorSearch
 import com.example.pexelapp.ui.component.HorizontalProgressBar
@@ -61,10 +59,8 @@ fun HomeScreen(
     val homeViewModel =
         daggerViewModel<HomeViewModel>(factory = viewModelFactoryState.viewModelFactory)
 
-    val photoList by homeViewModel.list.collectAsState()
     val homeScreenState by homeViewModel.homeScreenState.collectAsState()
     val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-    val searchQuery = homeViewModel.searchStateFlow.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     val handleAction: (HomeScreenAction) -> Unit = {
@@ -90,7 +86,6 @@ fun HomeScreen(
 
     HomeScreenContent(
         homeViewModel = homeViewModel,
-        photoList = photoList,
         lazyStaggeredGridState = lazyStaggeredGridState,
         onDetailsClickFromHome = onDetailsClickFromHome,
         homeScreenState = homeScreenState,
@@ -98,7 +93,7 @@ fun HomeScreen(
             homeViewModel.loadNew()
         },
         onSearchErrorClick = {
-            homeViewModel.setSearch(searchQuery.value)
+            homeViewModel.setSearch(homeScreenState.searchQuery)
             homeViewModel.loadNew()
         }
     )
@@ -107,27 +102,29 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenContent(
     homeViewModel: HomeViewModel,
-    photoList: List<Photo>,
     lazyStaggeredGridState: LazyStaggeredGridState,
     onDetailsClickFromHome: (Int) -> Unit,
     onErrorClick: () -> Unit,
     onSearchErrorClick: () -> Unit,
     homeScreenState: HomeScreenState
 ) {
-    val searchQuery = homeViewModel.searchStateFlow.collectAsState()
+    val searchQuery = homeScreenState.searchQuery
     Column {
-        SearchBar(viewModel = homeViewModel)
+        SearchBar(
+            viewModel = homeViewModel,
+            searchText = searchQuery
+        )
         if (homeScreenState.isLoading) {
             HorizontalProgressBar()
         }
         if (homeScreenState.isError) {
-            if (searchQuery.value.isEmpty()) {
+            if (searchQuery.isEmpty()) {
                 ErrorSearch(onSearchErrorClick)
-            } else if (photoList.isEmpty()) {
+            } else if (homeScreenState.photoList.isEmpty()) {
                 ErrorHome(onErrorClick)
             }
         } else {
-            if (searchQuery.value == "") {
+            if (searchQuery == "") {
                 FeaturedRow(
                     homeScreenState,
                     onItemSelected = {
@@ -136,7 +133,7 @@ private fun HomeScreenContent(
                 )
 
             }
-            PhotoList(photoList = photoList, lazyStaggeredGridState) {
+            PhotoList(photoList = homeScreenState.photoList, lazyStaggeredGridState) {
                 onDetailsClickFromHome(it)
             }
         }
@@ -147,9 +144,9 @@ private fun HomeScreenContent(
 @Composable
 private fun SearchBar(
     viewModel: HomeViewModel,
+    searchText: String
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val searchText by viewModel.searchStateFlow.collectAsState()
 
     SearchBar(
         modifier = Modifier

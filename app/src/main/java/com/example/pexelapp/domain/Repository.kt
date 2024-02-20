@@ -14,7 +14,7 @@ interface Repository {
 
     fun getPhoto(id: Int): Flow<Photo>
 
-    fun subscribeToPhoto(id: Int): Flow<Photo>
+    fun subscribeToPhoto(id: Int): Flow<Photo?>
 
     suspend fun addToBookmarks(photo: Photo)
 
