@@ -2,19 +2,11 @@ package com.example.pexelapp.di.modules
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.pexelapp.data.database.AppDataBase
 import com.example.pexelapp.data.database.PhotoDao
-import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Singleton
 
-@Module
 class DataBaseModule {
 
     @Provides
