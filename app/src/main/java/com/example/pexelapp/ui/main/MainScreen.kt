@@ -11,10 +11,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +50,9 @@ private fun BottomNavBar(
 ) {
     val navigationState = rememberNavigationState()
     val currentRoute = currentRoute(navController = navigationState.navHostController)
+    val snackBarHostState = remember {
+        SnackbarHostState()
+    }
 
     Scaffold(
         bottomBar = {
@@ -89,6 +97,17 @@ private fun BottomNavBar(
                     }
                 }
             }
+        },
+        snackbarHost = {
+            SnackbarHost (
+                hostState = snackBarHostState,
+                snackbar = {
+                    Snackbar(
+                        snackbarData = it,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            )
         }
     ) { paddingValues ->
         AppNavGraph(

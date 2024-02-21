@@ -2,6 +2,7 @@ package com.example.pexelapp.domain.use_case
 
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.Photo
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetPagingPhotoListUseCase @Inject constructor(

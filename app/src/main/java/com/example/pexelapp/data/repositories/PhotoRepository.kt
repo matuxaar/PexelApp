@@ -1,5 +1,7 @@
 package com.example.pexelapp.data.repositories
 
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -27,7 +29,8 @@ class PhotoRepository @Inject constructor(
     private val photoMapper: PhotoMapper,
     private val photoToEntityMapper: PhotoToEntityMapper,
     private val photoEntityMapper: PhotoEntityMapper,
-    private val oneCollectionMapper: OneCollectionMapper
+    private val oneCollectionMapper: OneCollectionMapper,
+    private val connectivityManager: ConnectivityManager
 ) : Repository {
 
     override fun getPhoto(id: Int): Flow<Photo> {
@@ -40,22 +43,40 @@ class PhotoRepository @Inject constructor(
         dataBaseSource.getPhotoById(id)
             .map { photoEntity ->
                 photoEntityMapper(photoEntity)
-            }
+            }.flowOn(Dispatchers.IO)
 
     override suspend fun getCuratedPhotos(page: Int): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
-            return@withContext runCatching {
-                val requestMap = mapOf("page" to page, "per_page" to PAGE_SIZE)
-                val response = photoService.getCurated(requestMap)
-                response.photos
+            return@withContext if (isInternetAvailable()) {
+                runCatching {
+                    val requestMap = mapOf("page" to page, "per_page" to PAGE_SIZE)
+                    val response = photoService.getCurated(requestMap)
+                    response.photos
+                }
+            } else {
+                val cachedPhotos = dataBaseSource.getAllPhotos().map { photoEntityMapper(it) }
+                if (cachedPhotos.isNotEmpty()) {
+                    Result.success(cachedPhotos)
+                } else {
+                    Result.failure(Exception("No internet connection"))
+                }
             }
         }
 
     override suspend fun getSearchPhotos(page: Int, query: String): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
-            return@withContext runCatching {
-                val response = photoService.search(page = page, PAGE_SIZE, query)
-                response.photos
+            return@withContext if (isInternetAvailable()) {
+                runCatching {
+                    val response = photoService.search(page = page, PAGE_SIZE, query)
+                    response.photos
+                }
+            } else {
+                val cachedPhotos = dataBaseSource.getAllPhotos().map { photoEntityMapper(it) }
+                if (cachedPhotos.isNotEmpty()) {
+                    Result.success(cachedPhotos)
+                } else {
+                    Result.failure(Exception("No internet connection"))
+                }
             }
         }
 
@@ -81,11 +102,20 @@ class PhotoRepository @Inject constructor(
             initialKey = 0
         ).flow.flowOn(Dispatchers.IO)
 
-    override suspend fun getCollections(): List<FeaturedCollection> {
+    override suspend fun getCollections(): List<FeaturedCollection> = withContext(Dispatchers.IO) {
         val response = photoService.getFeaturedCollections(mapOf())
-        return response.collections.map {
+        response.collections.map {
             oneCollectionMapper(it)
         }
+    }
+
+    private suspend fun isInternetAvailable(): Boolean {
+        return withContext(Dispatchers.IO) {
+            val network = connectivityManager.activeNetwork ?: return@withContext false
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return@withContext false
+            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        }
+
     }
 
     companion object {

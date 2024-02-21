@@ -10,6 +10,10 @@ import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,27 +49,51 @@ class DetailsViewModel @Inject constructor(
     }
 
     fun getPhoto(photoId: Int, isFromBookmarks: Boolean) {
-        viewModelScope.launch {
+        getPhotoUseCase.execute(photoId, isFromBookmarks).onStart {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
-            getPhotoUseCase.execute(photoId, isFromBookmarks).catch {
+        }.onEmpty {
+            _detailsStateFlow.update { currentState ->
+                currentState.copy(isError = true)
+            }
+        }.catch {
 
-            }.collect { photo ->
-                if (photo != null) {
-                    _detailsStateFlow.update { currentState ->
-                        currentState.copy(
-                            photo = photo,
-                            isLiked = isFromBookmarks && photo != null,
-                            isLoading = !isFromBookmarks
-                        )
-                    }
-                } else {
-                    _detailsStateFlow.update { currentState ->
-                        currentState.copy(isError = true)
-                    }
+        }.onEach { photo ->
+            if (photo != null) {
+                _detailsStateFlow.update { currentState ->
+                    currentState.copy(
+                        photo = photo,
+                        isLiked = isFromBookmarks && photo != null,
+                        isLoading = !isFromBookmarks
+                    )
+                }
+            } else {
+                _detailsStateFlow.update { currentState ->
+                    currentState.copy(isError = true)
                 }
             }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
-        }
+        }.launchIn(viewModelScope)
+//        viewModelScope.launch {
+//            _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
+//            getPhotoUseCase.execute(photoId, isFromBookmarks).catch {
+//
+//            }.collect { photo ->
+//                if (photo != null) {
+//                    _detailsStateFlow.update { currentState ->
+//                        currentState.copy(
+//                            photo = photo,
+//                            isLiked = isFromBookmarks && photo != null,
+//                            isLoading = !isFromBookmarks
+//                        )
+//                    }
+//                } else {
+//                    _detailsStateFlow.update { currentState ->
+//                        currentState.copy(isError = true)
+//                    }
+//                }
+//            }
+//            _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
+//        }
     }
 
     private fun addOrRemoveToBookmarks(isFromBookmarks: Boolean) {

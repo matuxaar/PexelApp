@@ -15,6 +15,9 @@ interface PhotoDao {
     @Query("SELECT * FROM photo_table ORDER BY id ASC LIMIT :limit OFFSET :offset")
     suspend fun getAllPhotoFromDb(limit: Int, offset: Int): List<PhotoEntity>
 
+    @Query("SELECT * FROM photo_table")
+    suspend fun getAllPhotos(): List<PhotoEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addToBookmarks(photoEntity: PhotoEntity)
 

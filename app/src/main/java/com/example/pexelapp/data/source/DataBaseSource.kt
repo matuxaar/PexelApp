@@ -18,4 +18,5 @@ class DataBaseSource @Inject constructor(
 
     suspend fun removeFromBookmark(photoId: Int) = photoDao.removeFromBookmark(photoId)
 
+    suspend fun getAllPhotos(): List<PhotoEntity> = photoDao.getAllPhotos()
 }

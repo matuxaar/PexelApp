@@ -1,5 +1,6 @@
 package com.example.pexelapp.ui.homescreen
 
+import android.accounts.NetworkErrorException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
@@ -30,7 +32,11 @@ class HomeViewModel @Inject constructor(
         when (action) {
             is HomeScreenAction.Init -> init()
             is HomeScreenAction.Search -> setSearch(action.query)
-            is HomeScreenAction.ErrorHome -> loadNewPhotos()
+            is HomeScreenAction.ErrorHome -> {
+                loadNewPhotos()
+                setSearch("")
+            }
+
             is HomeScreenAction.ErrorSearch -> loadNewPhotos(true)
         }
     }
@@ -41,9 +47,6 @@ class HomeViewModel @Inject constructor(
             .distinctUntilChanged()
             .debounce(300)
             .onEach {
-                _homeScreenState.update { currentState ->
-                    currentState.copy(photoList = emptyList())
-                }
                 loadNewPhotos(it.isNotEmpty())
             }
             .launchIn(viewModelScope)
@@ -65,28 +68,27 @@ class HomeViewModel @Inject constructor(
                 _homeScreenState.value.searchQuery
             ).fold(
                 onSuccess = {
-                    val old = _homeScreenState.value.photoList
                     val newList = buildList {
-                        addAll(old)
                         addAll(it)
                     }
                     _homeScreenState.update { currentState ->
-                        currentState.copy(photoList = newList)
+                        currentState.copy(
+                            photoList = newList,
+                            isLoading = false,
+                            isError = newList.isEmpty()
+                        )
                     }
                 },
                 onFailure = {
                     if (_homeScreenState.value.photoList.isEmpty()) {
                         _homeScreenState.value =
-                            _homeScreenState.value.copy(isError = true, isLoading = true)
+                            _homeScreenState.value.copy(
+                                isError = true,
+                                isLoading = true
+                            )
                     }
                 }
             )
-            if (_homeScreenState.value.photoList.isNotEmpty()) {
-                _homeScreenState.value = _homeScreenState.value.copy(isLoading = false)
-            } else if (_homeScreenState.value.photoList.isEmpty()) {
-                _homeScreenState.value =
-                    _homeScreenState.value.copy(isLoading = false, isError = true)
-            }
         }
     }
 
