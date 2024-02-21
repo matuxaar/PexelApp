@@ -3,6 +3,7 @@ package com.example.pexelapp.ui.detailsscreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.use_case.AddOrRemoveUseCase
+import com.example.pexelapp.domain.use_case.DownloadPhotoUseCase
 import com.example.pexelapp.domain.use_case.GetPhotoUseCase
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenAction
 import com.example.pexelapp.ui.detailsscreen.data.DetailsScreenState
@@ -16,6 +17,7 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     private val getPhotoUseCase: GetPhotoUseCase,
     private val addOrRemoveUseCase: AddOrRemoveUseCase,
+    private val downloadPhotoUseCase: DownloadPhotoUseCase
 ) : ViewModel() {
 
     private val _detailsStateFlow = MutableStateFlow(DetailsScreenState())
@@ -25,7 +27,7 @@ class DetailsViewModel @Inject constructor(
         when (action) {
             is DetailsScreenAction.Init -> init(action.photoId, isFromBookmarks)
             is DetailsScreenAction.Like -> addOrRemoveToBookmarks(isFromBookmarks)
-            is DetailsScreenAction.Download -> TODO()
+            is DetailsScreenAction.Download -> savePhotoToDevice(action.imageUrl, action.photoId)
             DetailsScreenAction.BackPress -> backPress()
         }
     }
@@ -74,6 +76,12 @@ class DetailsViewModel @Inject constructor(
             _detailsStateFlow.update { currentState ->
                 currentState.copy(isLiked = !isLiked)
             }
+        }
+    }
+
+    private fun savePhotoToDevice(imageUrl: String, photoId: Int) {
+        viewModelScope.launch {
+            downloadPhotoUseCase.invoke(imageUrl, photoId)
         }
     }
 }

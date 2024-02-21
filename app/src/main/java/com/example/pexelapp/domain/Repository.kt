@@ -22,9 +22,5 @@ interface Repository {
 
     fun subscribeToPhotos(): Flow<PagingData<Photo>>
 
-//    suspend fun savePhotoToDevice(imageUrl: String): Long
-//
-//    suspend fun isPhotoDownloaded(context: Context, photoId: Int): Boolean
-
     suspend fun getCollections(): List<FeaturedCollection>
 }

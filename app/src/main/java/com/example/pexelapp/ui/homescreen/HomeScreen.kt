@@ -81,13 +81,13 @@ private fun HomeScreenContent(
                 ErrorSearch{
                     homeActionHandler(HomeScreenAction.ErrorSearch)
                 }
-            } else if (homeScreenState.photoList.isEmpty()) {
+            } else {
                 ErrorHome{
                     homeActionHandler(HomeScreenAction.ErrorHome)
                 }
             }
         } else {
-            AnimatedVisibility (searchQuery.isEmpty()) {
+            AnimatedVisibility(searchQuery.isEmpty()) {
                 FeaturedRow(
                     homeScreenState,
                     onItemSelected = {
@@ -98,7 +98,6 @@ private fun HomeScreenContent(
             PhotoList(
                 photoList = homeScreenState.photoList,
                 lazyVerticalStaggeredState = lazyStaggeredGridState,
-                homeActionHandler = homeActionHandler,
                 onDetailsClickFromHome =  {
                     onDetailsClickFromHome(it)
                 }

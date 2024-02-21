@@ -5,7 +5,8 @@ sealed class DetailsScreenAction {
     data object Like: DetailsScreenAction()
     data object BackPress: DetailsScreenAction()
     data class Download(
-        val imageUrl: String
+        val imageUrl: String,
+        val photoId: Int
     ): DetailsScreenAction()
 
 

@@ -81,31 +81,6 @@ class PhotoRepository @Inject constructor(
             initialKey = 0
         ).flow.flowOn(Dispatchers.IO)
 
-//    override suspend fun savePhotoToDevice(imageUrl: String): Long {
-//        withContext(Dispatchers.Default) {
-//            try {
-//                val request = DownloadManager.Request(imageUrl.toUri())
-//                    .setMimeType("image/jpeg")
-//                    //.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE)
-//                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-//                    .setTitle("image.jpg")
-//                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "image.jpg")
-//            } catch (e: Exception) {
-//
-//            }
-//        }
-//    }
-
-//    override suspend fun isPhotoDownloaded(context: Context, photoId: Int): Boolean {
-//        return withContext(Dispatchers.IO) {
-//            val file = File(
-//                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-//                "image_$photoId.jpg"
-//            )
-//            file.exists()
-//        }
-//    }
-
     override suspend fun getCollections(): List<FeaturedCollection> {
         val response = photoService.getFeaturedCollections(mapOf())
         return response.collections.map {

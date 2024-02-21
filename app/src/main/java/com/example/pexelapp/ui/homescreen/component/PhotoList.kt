@@ -15,27 +15,20 @@ import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 fun PhotoList(
     photoList: List<Photo>,
     lazyVerticalStaggeredState: LazyStaggeredGridState,
-    onDetailsClickFromHome: (Int) -> Unit,
-    homeActionHandler: (HomeScreenAction) -> Unit
+    onDetailsClickFromHome: (Int) -> Unit
 ) {
-    if (photoList.isEmpty()) {
-        ErrorHome {
-            homeActionHandler(HomeScreenAction.ErrorHome)
-        }
-    } else {
-        LazyVerticalStaggeredGrid(
-            state = lazyVerticalStaggeredState,
-            modifier = Modifier.padding(start = 24.dp, end = 6.dp),
-            columns = StaggeredGridCells.Fixed(2),
-            content = {
-                items(photoList) {
-                    PhotoItem(
-                        url = it.src.original,
-                        photoId = it.id,
-                        onClick = onDetailsClickFromHome
-                    )
-                }
+    LazyVerticalStaggeredGrid(
+        state = lazyVerticalStaggeredState,
+        modifier = Modifier.padding(start = 24.dp, end = 6.dp),
+        columns = StaggeredGridCells.Fixed(2),
+        content = {
+            items(photoList) {
+                PhotoItem(
+                    url = it.src.original,
+                    photoId = it.id,
+                    onClick = onDetailsClickFromHome
+                )
             }
-        )
-    }
+        }
+    )
 }

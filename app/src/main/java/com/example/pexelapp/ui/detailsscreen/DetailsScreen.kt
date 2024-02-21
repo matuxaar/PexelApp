@@ -78,7 +78,8 @@ private fun DetailsScreenContent(
             liked = detailsScreenState.isLiked,
             onDownloadClick = {
                 val downloadAction = DetailsScreenAction.Download(
-                    detailsScreenState.photo.src.original
+                    detailsScreenState.photo.src.original,
+                    detailsScreenState.photo.id
                 )
                 detailsActionHandler(downloadAction)
             }
