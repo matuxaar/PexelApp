@@ -4,7 +4,6 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import javax.inject.Inject
 
 class DownloadCompleteReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

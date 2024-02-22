@@ -2,7 +2,6 @@ package com.example.pexelapp.ui.detailsscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.domain.use_case.AddOrRemoveUseCase
 import com.example.pexelapp.domain.use_case.DownloadPhotoUseCase
 import com.example.pexelapp.domain.use_case.GetPhotoUseCase
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch

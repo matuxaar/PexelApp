@@ -1,6 +1,5 @@
 package com.example.pexelapp.ui.detailsscreen
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable

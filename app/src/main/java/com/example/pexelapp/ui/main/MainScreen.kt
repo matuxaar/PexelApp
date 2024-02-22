@@ -14,7 +14,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Snackbar
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -42,7 +41,6 @@ import com.example.pexelapp.ui.theme.Red
 fun MainScreen(viewModelFactoryState: ViewModelFactoryState) {
     BottomNavBar(viewModelFactoryState = viewModelFactoryState)
 }
-
 
 @Composable
 private fun BottomNavBar(

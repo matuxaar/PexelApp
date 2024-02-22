@@ -1,7 +1,5 @@
 package com.example.pexelapp.ui.homescreen
 
-import android.accounts.NetworkErrorException
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
@@ -18,7 +16,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
