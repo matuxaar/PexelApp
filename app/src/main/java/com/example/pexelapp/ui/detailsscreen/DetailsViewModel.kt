@@ -2,6 +2,7 @@ package com.example.pexelapp.ui.detailsscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pexelapp.domain.model.Photo
 import com.example.pexelapp.domain.use_case.AddOrRemoveUseCase
 import com.example.pexelapp.domain.use_case.DownloadPhotoUseCase
 import com.example.pexelapp.domain.use_case.GetPhotoUseCase
@@ -51,12 +52,8 @@ class DetailsViewModel @Inject constructor(
     fun getPhoto(photoId: Int, isFromBookmarks: Boolean) {
         getPhotoUseCase.execute(photoId, isFromBookmarks).onStart {
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
-        }.onEmpty {
-            _detailsStateFlow.update { currentState ->
-                currentState.copy(isError = true)
-            }
         }.catch {
-
+            it.printStackTrace()
         }.onEach { photo ->
             if (photo != null) {
                 _detailsStateFlow.update { currentState ->
@@ -68,32 +65,13 @@ class DetailsViewModel @Inject constructor(
                 }
             } else {
                 _detailsStateFlow.update { currentState ->
-                    currentState.copy(isError = true)
+                    currentState.copy(
+                        isError = true
+                    )
                 }
             }
             _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
         }.launchIn(viewModelScope)
-//        viewModelScope.launch {
-//            _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = true)
-//            getPhotoUseCase.execute(photoId, isFromBookmarks).catch {
-//
-//            }.collect { photo ->
-//                if (photo != null) {
-//                    _detailsStateFlow.update { currentState ->
-//                        currentState.copy(
-//                            photo = photo,
-//                            isLiked = isFromBookmarks && photo != null,
-//                            isLoading = !isFromBookmarks
-//                        )
-//                    }
-//                } else {
-//                    _detailsStateFlow.update { currentState ->
-//                        currentState.copy(isError = true)
-//                    }
-//                }
-//            }
-//            _detailsStateFlow.value = _detailsStateFlow.value.copy(isLoading = false)
-//        }
     }
 
     private fun addOrRemoveToBookmarks(isFromBookmarks: Boolean) {

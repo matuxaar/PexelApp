@@ -36,7 +36,9 @@ class BookmarksViewModel @Inject constructor(
             .onStart {
                 _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
             }
-            .catch { }
+            .catch {
+                it.printStackTrace()
+            }
             .onEach {
                 _bookmarksScreenState.update { currentState ->
                     currentState.copy(photoList = flowOf(it))

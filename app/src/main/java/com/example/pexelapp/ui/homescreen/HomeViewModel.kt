@@ -1,6 +1,7 @@
 package com.example.pexelapp.ui.homescreen
 
 import android.accounts.NetworkErrorException
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
@@ -66,7 +67,14 @@ class HomeViewModel @Inject constructor(
                 _homeScreenState.value.photoList,
                 isSearch,
                 _homeScreenState.value.searchQuery
-            ).fold(
+            ).onFailure {
+                _homeScreenState.update { currentState ->
+                    currentState.copy(
+                        isError = true
+                    )
+                }
+                it.printStackTrace()
+            }.fold(
                 onSuccess = {
                     val newList = buildList {
                         addAll(it)

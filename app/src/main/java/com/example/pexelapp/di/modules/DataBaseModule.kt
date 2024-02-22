@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Room
 import com.example.pexelapp.data.database.AppDataBase
 import com.example.pexelapp.data.database.PhotoDao
+import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+@Module
 class DataBaseModule {
 
     @Provides
