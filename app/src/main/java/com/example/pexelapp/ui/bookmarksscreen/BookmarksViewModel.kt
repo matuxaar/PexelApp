@@ -2,36 +2,48 @@ package com.example.pexelapp.ui.bookmarksscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.pexelapp.domain.Repository
-import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.bookmarksscreen.data.BookmarkScreenState
-import kotlinx.coroutines.flow.Flow
+import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenAction
+import com.example.pexelapp.ui.bookmarksscreen.data.BookmarksScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class BookmarksViewModel @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _photoListStateFlow =
-        MutableStateFlow<Flow<PagingData<Photo>>>(emptyFlow())
-    val photoListStateFlow = _photoListStateFlow.asStateFlow()
-
     private val _bookmarksScreenState =
-        MutableStateFlow(BookmarkScreenState())
+        MutableStateFlow(BookmarksScreenState())
     val bookmarksScreenState = _bookmarksScreenState.asStateFlow()
 
-    fun getLikedPhotos() {
-        viewModelScope.launch {
-            _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
-            _photoListStateFlow.value = repository.subscribeToPhotos()
-            _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
+    fun handleAction(action: BookmarksScreenAction) {
+        when (action) {
+            is BookmarksScreenAction.Init -> getLikedPhotos()
         }
     }
 
-
+    private fun getLikedPhotos() {
+        repository.subscribeToPhotos()
+            .cachedIn(viewModelScope)
+            .onStart {
+                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = true)
+            }
+            .catch {
+                it.printStackTrace()
+            }
+            .onEach {
+                _bookmarksScreenState.update { currentState ->
+                    currentState.copy(photoList = flowOf(it))
+                }
+                _bookmarksScreenState.value = _bookmarksScreenState.value.copy(isLoading = false)
+            }.launchIn(viewModelScope)
+    }
 }

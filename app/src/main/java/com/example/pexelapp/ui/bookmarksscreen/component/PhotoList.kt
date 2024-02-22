@@ -21,51 +21,28 @@ fun PhotoList(
     lazyVerticalStaggeredState: LazyStaggeredGridState
 ) {
     val photoListItems: LazyPagingItems<Photo> = photoList.collectAsLazyPagingItems()
-
-    LazyVerticalStaggeredGrid(
-        state = lazyVerticalStaggeredState,
-        modifier = Modifier.padding(start = 24.dp, end = 6.dp, top = 40.dp),
-        columns = StaggeredGridCells.Fixed(2),
-        content = {
-            items(photoListItems.itemCount) { index ->
-                val photo = photoListItems[index] ?: return@items
-                PhotoItem(
-                    url = photo.src.original,
-                    photographer = photo.photographer,
-                    onClick = onDetailsClickFromBookmarks,
-                    photoId = photo.id
-                )
-            }
-//            photoListItems.apply {
-//                when{
-//                    loadState.refresh is LoadState.Loading -> {
-//                        item {
-//                            HorizontalProgressBar()
-//                        }
-//                    }
-//                    loadState.refresh is LoadState.Error -> {
-//                        item {
-//                            ErrorBookmarks {
-//                                onNavigateToHomeClick()
-//                            }
-//                        }
-//                    }
-//                    loadState.append is LoadState.Loading -> {
-//                        item {
-//                            HorizontalProgressBar()
-//                        }
-//                    }
-//                    loadState.append is LoadState.Error -> {
-//                        item {
-//                            ErrorBookmarks {
-//                                onNavigateToHomeClick()
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+    if (photoListItems.itemCount == 0) {
+        ErrorBookmarks {
+            onNavigateToHomeClick()
         }
-    )
+    } else {
+        LazyVerticalStaggeredGrid(
+            state = lazyVerticalStaggeredState,
+            modifier = Modifier.padding(start = 24.dp, end = 6.dp, top = 40.dp),
+            columns = StaggeredGridCells.Fixed(2),
+            content = {
+                items(photoListItems.itemCount) { index ->
+                    val photo = photoListItems[index] ?: return@items
+                    PhotoItem(
+                        url = photo.src.original,
+                        photographer = photo.photographer,
+                        onClick = onDetailsClickFromBookmarks,
+                        photoId = photo.id
+                    )
+                }
+            }
+        )
+    }
 }
 
 

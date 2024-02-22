@@ -1,55 +1,26 @@
 package com.example.pexelapp.ui.homescreen
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.pexelapp.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pexelapp.di.ViewModelFactoryState
 import com.example.pexelapp.di.daggerViewModel
-import com.example.pexelapp.domain.model.Photo
-import com.example.pexelapp.ui.component.ErrorHome
-import com.example.pexelapp.ui.component.ErrorSearch
 import com.example.pexelapp.ui.component.HorizontalProgressBar
-import com.example.pexelapp.ui.component.PhotoList
+import com.example.pexelapp.ui.homescreen.component.PhotoList
+import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 import com.example.pexelapp.ui.homescreen.data.HomeScreenState
-import com.example.pexelapp.ui.theme.Red
-import com.example.pexelapp.ui.theme.White
+import com.example.pexelapp.ui.homescreen.component.*
 
 @Composable
 fun HomeScreen(
@@ -58,16 +29,16 @@ fun HomeScreen(
 ) {
     val homeViewModel =
         daggerViewModel<HomeViewModel>(factory = viewModelFactoryState.viewModelFactory)
-
-    val photoList by homeViewModel.list.collectAsState()
     val homeScreenState by homeViewModel.homeScreenState.collectAsState()
-    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-    val searchQuery = homeViewModel.searchStateFlow.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val handleAction: (HomeScreenAction) -> Unit = {
+        homeViewModel.handleAction(it)
+    }
 
     LaunchedEffect(Unit) {
-        homeViewModel.loadNew()
+        handleAction(HomeScreenAction.Init)
     }
+
+    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
 
     val shouldStartPaginate = remember {
         derivedStateOf {
@@ -78,175 +49,63 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = shouldStartPaginate.value) {
-        if (shouldStartPaginate.value)
-            homeViewModel.loadNew()
+        if (shouldStartPaginate.value) {
+            handleAction(HomeScreenAction.Init)
+        }
     }
 
     HomeScreenContent(
-        homeViewModel = homeViewModel,
-        photoList = photoList,
-        lazyStaggeredGridState = lazyStaggeredGridState,
         onDetailsClickFromHome = onDetailsClickFromHome,
         homeScreenState = homeScreenState,
-        onErrorClick = {
-            homeViewModel.loadNew()
-        },
-        onSearchErrorClick = {
-            homeViewModel.setSearch(searchQuery.value)
-            homeViewModel.loadNew()
-        }
+        homeActionHandler = handleAction,
+        lazyStaggeredGridState = lazyStaggeredGridState
     )
 }
 
 @Composable
 private fun HomeScreenContent(
-    homeViewModel: HomeViewModel,
-    photoList: List<Photo>,
+    homeActionHandler: (HomeScreenAction) -> Unit,
     lazyStaggeredGridState: LazyStaggeredGridState,
     onDetailsClickFromHome: (Int) -> Unit,
-    onErrorClick: () -> Unit,
-    onSearchErrorClick: () -> Unit,
     homeScreenState: HomeScreenState
 ) {
-    val searchQuery = homeViewModel.searchStateFlow.collectAsState()
+    val searchQuery = homeScreenState.searchQuery
     Column {
-        SearchBar(viewModel = homeViewModel)
+        PexelSearchBar(
+            setSearch = {
+                homeActionHandler(HomeScreenAction.Search(it))
+            },
+            searchText = searchQuery
+        )
         if (homeScreenState.isLoading) {
             HorizontalProgressBar()
         }
         if (homeScreenState.isError) {
-            if (searchQuery.value.isEmpty()) {
-                ErrorSearch(onSearchErrorClick)
-            } else if (photoList.isEmpty()) {
-                ErrorHome(onErrorClick)
+            if (searchQuery.isEmpty()) {
+                ErrorSearch{
+                    homeActionHandler(HomeScreenAction.ErrorSearch)
+                }
+            } else {
+                ErrorHome{
+                    homeActionHandler(HomeScreenAction.ErrorHome)
+                }
             }
         } else {
-            if (searchQuery.value == "") {
+            AnimatedVisibility(searchQuery.isEmpty()) {
                 FeaturedRow(
-                    homeViewModel,
+                    homeScreenState,
                     onItemSelected = {
-                        homeViewModel.setSearch(it)
-                    }
-                )
-
-            }
-            PhotoList(photoList = photoList, lazyStaggeredGridState) {
-                onDetailsClickFromHome(it)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
-@Composable
-private fun SearchBar(
-    viewModel: HomeViewModel,
-) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val searchText by viewModel.searchStateFlow.collectAsState()
-
-    SearchBar(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp),
-        query = searchText,
-        onQueryChange = { text ->
-            viewModel.setSearch(text)
-        },
-        placeholder = {
-            Text(
-                text = "Search",
-                fontSize = 14.sp,
-                fontFamily = FontFamily(Font(R.font.mulish_regular)),
-                fontWeight = FontWeight(400),
-                color = if (searchText.isEmpty()) MaterialTheme.colorScheme.onSurface
-                else MaterialTheme.colorScheme.onBackground
-            )
-        },
-        leadingIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_search_icon),
-                contentDescription = null
-            )
-        },
-        trailingIcon = {
-            if (searchText.isNotBlank()) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_delete_icon),
-                    contentDescription = null,
-                    modifier = Modifier.clickable {
-                        viewModel.setSearch("")
+                        homeActionHandler(HomeScreenAction.Search(it))
                     }
                 )
             }
-        },
-        onSearch = {
-            keyboardController?.hide()
-        },
-        colors = SearchBarDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.onTertiary
-        ),
-        active = false,
-        onActiveChange = {
-        }
-    ) {}
-}
-
-@Composable
-private fun FeaturedRow(
-    viewModel: HomeViewModel,
-    onItemSelected: (String) -> Unit
-) {
-    val featuredCollectionsList = viewModel.getCollections().take(7)
-    var selectedPosition by remember {
-        mutableStateOf<Int?>(null)
-    }
-    LazyRow(
-        modifier = Modifier
-            .padding(start = 24.dp, top = 24.dp, bottom = 24.dp),
-    ) {
-        items(featuredCollectionsList.size) { index ->
-            val collection = featuredCollectionsList[index]
-            FeaturedItem(
-                text = collection.title,
-                isSelected = selectedPosition == index,
-                onItemSelected = {
-                    selectedPosition = index
-                    onItemSelected(collection.title)
+            PhotoList(
+                photoList = homeScreenState.photoList,
+                lazyVerticalStaggeredState = lazyStaggeredGridState,
+                onDetailsClickFromHome =  {
+                    onDetailsClickFromHome(it)
                 }
             )
-            Spacer(modifier = Modifier.width(12.dp))
         }
     }
 }
-
-@Composable
-private fun FeaturedItem(
-    text: String,
-    isSelected: Boolean,
-    onItemSelected: (String) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(shape = RoundedCornerShape(100.dp))
-            .height(38.dp)
-            .background(
-                if (isSelected) Red
-                else MaterialTheme.colorScheme.onTertiary
-            )
-            .clickable { onItemSelected(text) },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontFamily = FontFamily(Font(R.font.mulish_regular)),
-            fontWeight = FontWeight(400),
-            color = if (isSelected) White else MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
-        )
-    }
-}
-
-
-

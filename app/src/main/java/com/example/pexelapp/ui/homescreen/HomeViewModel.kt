@@ -1,110 +1,111 @@
 package com.example.pexelapp.ui.homescreen
 
+import android.accounts.NetworkErrorException
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pexelapp.domain.Repository
 import com.example.pexelapp.domain.model.FeaturedCollection
-import com.example.pexelapp.domain.model.Photo
+import com.example.pexelapp.domain.use_case.GetPagingPhotoListUseCase
+import com.example.pexelapp.ui.homescreen.data.HomeScreenAction
 import com.example.pexelapp.ui.homescreen.data.HomeScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
-    private val repository: Repository
+    private val repository: Repository,
+    private val getPagingPhotoListUseCase: GetPagingPhotoListUseCase
 ) : ViewModel() {
 
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState = _homeScreenState.asStateFlow()
 
-    private val _list: MutableStateFlow<List<Photo>> = MutableStateFlow(emptyList())
-    val list = _list.asStateFlow()
+    fun handleAction(action: HomeScreenAction) {
+        when (action) {
+            is HomeScreenAction.Init -> init()
+            is HomeScreenAction.Search -> setSearch(action.query)
+            is HomeScreenAction.ErrorHome -> {
+                loadNewPhotos()
+                setSearch("")
+            }
 
-    private val _searchStateFlow = MutableStateFlow("")
-    val searchStateFlow = _searchStateFlow.asStateFlow()
+            is HomeScreenAction.ErrorSearch -> loadNewPhotos(true)
+        }
+    }
 
-    private val _collectionsStateFlow: MutableStateFlow<List<FeaturedCollection>> =
-        MutableStateFlow(emptyList())
-    val collectionsStateFlow = _collectionsStateFlow.asStateFlow()
-
-    init {
-        _searchStateFlow
+    private fun init() {
+        _homeScreenState
+            .map { it.searchQuery }
+            .distinctUntilChanged()
             .debounce(300)
             .onEach {
-                _list.value = emptyList()
-                loadNew(it.isNotEmpty())
+                loadNewPhotos(it.isNotEmpty())
             }
             .launchIn(viewModelScope)
+        getCollections()
     }
 
-    fun setSearch(search: String) {
-        _searchStateFlow.update { search }
+    private fun setSearch(search: String) {
+        _homeScreenState.update { currentState ->
+            currentState.copy(searchQuery = search)
+        }
     }
 
-
-    fun loadNew(isSearch: Boolean = false) {
+    private fun loadNewPhotos(isSearch: Boolean = false) {
         viewModelScope.launch {
             _homeScreenState.value = _homeScreenState.value.copy(isLoading = true)
-            if (!isSearch) {
-                repository
-                    .getCuratedPhotos((_list.value.size / 30))
-                    .fold(
-                        onSuccess = { newList ->
-                            val old = _list.value
-                            val new = buildList {
-                                addAll(old)
-                                addAll(newList)
-                            }
-                            _list.value = new
-                        },
-                        onFailure = {
-                            if (_list.value.isEmpty()) {
-                                _homeScreenState.value =
-                                    _homeScreenState.value.copy(isError = true, isLoading = true)
-                            }
-                        }
+            getPagingPhotoListUseCase.invoke(
+                _homeScreenState.value.photoList,
+                isSearch,
+                _homeScreenState.value.searchQuery
+            ).onFailure {
+                _homeScreenState.update { currentState ->
+                    currentState.copy(
+                        isError = true
                     )
-            } else {
-                repository
-                    .getSearchPhotos((_list.value.size / 30), _searchStateFlow.value)
-                    .fold(
-                        onSuccess = { newList ->
-                            val old = _list.value
-                            val new = buildList {
-                                addAll(old)
-                                addAll(newList)
-                            }
-
-                            _list.value = new
-                        },
-                        onFailure = {
-                            if (_list.value.isEmpty()) {
-                                _homeScreenState.value =
-                                    _homeScreenState.value.copy(isError = true, isLoading = true)
-                            }
-                        }
-                    )
-            }
-            if (_list.value.isNotEmpty()) {
-                _homeScreenState.value = _homeScreenState.value.copy(isLoading = false)
-            } else if (_list.value.isEmpty()) {
-                _homeScreenState.value =
-                    _homeScreenState.value.copy(isLoading = false, isError = true)
-            }
+                }
+                it.printStackTrace()
+            }.fold(
+                onSuccess = {
+                    val newList = buildList {
+                        addAll(it)
+                    }
+                    _homeScreenState.update { currentState ->
+                        currentState.copy(
+                            photoList = newList,
+                            isLoading = false,
+                            isError = newList.isEmpty()
+                        )
+                    }
+                },
+                onFailure = {
+                    if (_homeScreenState.value.photoList.isEmpty()) {
+                        _homeScreenState.value =
+                            _homeScreenState.value.copy(
+                                isError = true,
+                                isLoading = true
+                            )
+                    }
+                }
+            )
         }
     }
 
-    fun getCollections(): List<FeaturedCollection> {
+    private fun getCollections(): List<FeaturedCollection> {
         viewModelScope.launch {
-            _collectionsStateFlow.value = repository.getCollections()
+            _homeScreenState.update { currentState ->
+                currentState.copy(collections = repository.getCollections())
+            }
         }
-        return _collectionsStateFlow.value
+        return _homeScreenState.value.collections
     }
-
-
 }

@@ -1,18 +1,10 @@
 package com.example.pexelapp.data.repositories
 
-import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.example.pexelapp.data.mappers.OneCollectionMapper
 import com.example.pexelapp.data.mappers.PhotoEntityMapper
 import com.example.pexelapp.data.mappers.PhotoMapper
@@ -29,7 +21,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.io.File
 import javax.inject.Inject
 
 class PhotoRepository @Inject constructor(
@@ -44,30 +35,43 @@ class PhotoRepository @Inject constructor(
     override fun getPhoto(id: Int): Flow<Photo> {
         return flow {
             emit(photoMapper(photoService.getPhoto(id)))
-        }
+        }.flowOn(Dispatchers.IO)
     }
 
     override fun subscribeToPhoto(id: Int): Flow<Photo> =
         dataBaseSource.getPhotoById(id)
             .map { photoEntity ->
-                photoEntity ?: throw NullPointerException("PhotoEntity is null")
                 photoEntityMapper(photoEntity)
-            }
+            }.flowOn(Dispatchers.IO)
 
     override suspend fun getCuratedPhotos(page: Int): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
             return@withContext runCatching {
-                val requestMap = mapOf("page" to page, "per_page" to 30)
+                val requestMap = mapOf("page" to page, "per_page" to PAGE_SIZE)
                 val response = photoService.getCurated(requestMap)
                 response.photos
+            }.onFailure {
+                val cachedPhotos = dataBaseSource.getAllPhotos().map { photoEntityMapper(it) }
+                if (cachedPhotos.isNotEmpty()) {
+                    Result.success(cachedPhotos)
+                } else {
+                    Result.failure(it)
+                }
             }
         }
 
     override suspend fun getSearchPhotos(page: Int, query: String): Result<List<Photo>> =
         withContext(Dispatchers.IO) {
             return@withContext runCatching {
-                val response = photoService.search(page = page, 30, query)
+                val response = photoService.search(page = page, PAGE_SIZE, query)
                 response.photos
+            }.onFailure {
+                val cachedPhotos = dataBaseSource.getAllPhotos().map { photoEntityMapper(it) }
+                if (cachedPhotos.isNotEmpty()) {
+                    Result.success(cachedPhotos)
+                } else {
+                    Result.failure(it)
+                }
             }
         }
 
@@ -93,59 +97,11 @@ class PhotoRepository @Inject constructor(
             initialKey = 0
         ).flow.flowOn(Dispatchers.IO)
 
-    override suspend fun savePhotoToDevice(context: Context, imageUrl: String, photoId: Int) {
-        return withContext(Dispatchers.IO) {
-            Glide.with(context)
-                .asBitmap()
-                .load(imageUrl)
-                .into(object : CustomTarget<Bitmap>() {
-                    override fun onResourceReady(
-                        resource: Bitmap,
-                        transition: Transition<in Bitmap>?
-                    ) {
-                        saveBitmapToGallery(context, resource, photoId)
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                    }
-                })
-        }
-    }
-
-    private fun saveBitmapToGallery(context: Context, bitmap: Bitmap, photoId: Int) {
-        val imageUri = MediaStore.Images.Media.insertImage(
-            context.contentResolver,
-            bitmap,
-            "image_$photoId",
-            null
-        )
-
-        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(imageUri)))
-    }
-
-    override suspend fun isPhotoDownloaded(context: Context, photoId: Int): Boolean {
-        return withContext(Dispatchers.IO) {
-            val file = File(
-                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                "image_$photoId.jpg"
-            )
-            file.exists()
-        }
-    }
-
-    override suspend fun getCollections(): List<FeaturedCollection> {
+    override suspend fun getCollections(): List<FeaturedCollection> = withContext(Dispatchers.IO) {
         val response = photoService.getFeaturedCollections(mapOf())
-        return response.collections.map {
+        response.collections.map {
             oneCollectionMapper(it)
         }
-    }
-
-    override suspend fun getLikeState(photoId: Int): Boolean = withContext(Dispatchers.IO) {
-        dataBaseSource.getLikeState(photoId)
-    }
-
-    override suspend fun saveLikeState(photo: Photo) = withContext(Dispatchers.IO) {
-        dataBaseSource.saveLikeState(photoToEntityMapper(photo))
     }
 
     companion object {

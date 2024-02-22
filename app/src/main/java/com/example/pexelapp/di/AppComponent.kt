@@ -9,16 +9,24 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pexelapp.MainActivity
+import com.example.pexelapp.data.repositories.DownloadRepository
 import com.example.pexelapp.di.modules.DataBaseModule
 import com.example.pexelapp.di.modules.DataModule
 import com.example.pexelapp.di.modules.NetworkModule
+import com.example.pexelapp.di.modules.SourceModule
 import com.example.pexelapp.di.modules.ViewModelModule
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [NetworkModule::class, ViewModelModule::class, DataBaseModule::class, DataModule::class])
+@Component(modules = [
+    NetworkModule::class,
+    ViewModelModule::class,
+    DataBaseModule::class,
+    DataModule::class,
+    SourceModule::class
+])
 interface AppComponent {
 
     @Component.Factory

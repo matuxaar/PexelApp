@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HorizontalProgressBar() {
-
     LinearProgressIndicator(
         trackColor = MaterialTheme.colorScheme.onSurface,
         color = MaterialTheme.colorScheme.onPrimary,
